@@ -1,0 +1,426 @@
+[
+  {
+    "id": 4001,
+    "name": "polyT primer",
+    "aliases": [],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "µM"
+      }
+    },
+    "notes": "The sequence is GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCTTTTTTTTTTTTTTTTTTTTT"
+  },
+  {
+    "id": 4002,
+    "name": "P5 primer",
+    "aliases": [],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "µM"
+      }
+    },
+    "notes": "The sequence is AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATC*T"
+  },
+  {
+    "id": 4003,
+    "name": "P7-i23 primer",
+    "aliases": [],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "µM"
+      }
+    },
+    "notes": "The sequence is CAAGCAGAAGACGGCATACGAGATATCCACTCGTGACTGGAGTTCAGACGTGTGCTCTTCCGATC-s-T"
+  },
+  {
+    "id": 4010,
+    "name": "B&W Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2,
+        "unit": "X"
+      }
+    },
+    "components": [
+      {
+        "name": "Tris-HCl"
+      },
+      {
+        "name": "EDTA"
+      },
+      {
+        "name": "NaCl"
+      },
+      {
+        "name": "Tween-20"
+      }
+    ]
+  },
+  {
+    "id": 4006,
+    "name": "dATP",
+    "aliases": [
+      "Deoxyadenosine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4007,
+    "name": "dCTP",
+    "aliases": [
+      "Deoxycytidine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4008,
+    "name": "dGTP",
+    "aliases": [
+      "Deoxyguanosine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4011,
+    "name": "dTTP",
+    "aliases": [
+      "Deoxythymidine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4014,
+    "name": "Ethanol",
+    "aliases": [
+      "80% ethanol",
+      "99.5% ethanol",
+      "ethanol"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {},
+    "notes": "Used in various concentrations."
+  },
+  {
+    "id": 4015,
+    "name": "High-Fidelity DNA Polymerase",
+    "aliases": [
+      "Phanta Max Super-Fidelity DNA Polymerase"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4016,
+    "name": "Phanta Max Master Mix (Dye Plus)",
+    "aliases": [
+      "Phanta Max Master Mix"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2,
+        "unit": "X"
+      }
+    }
+  },
+  {
+    "id": 4017,
+    "name": "Nuclease-free water",
+    "aliases": [
+      "H2O",
+      "ddH2O",
+      "HPLC Water"
+    ],
+    "category": "Reagent",
+    "form": "Liquid",
+    "properties": {}
+  },
+  {
+    "id": 4022,
+    "name": "Sodium Chloride",
+    "aliases": [
+      "NaCl"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4023,
+    "name": "VAHTS DNA Clean Beads",
+    "aliases": [
+      "Solid Phase Reversible Immobilization Beads",
+      "SPRI Beads"
+    ],
+    "category": "Consumable",
+    "form": "Suspension",
+    "properties": {}
+  },
+  {
+    "id": 4025,
+    "name": "Terminal Deoxynucleotidyl Transferase",
+    "aliases": [
+      "TdT"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4026,
+    "name": "Terminal Deoxynucleotidyl Transferase Reaction Buffer",
+    "aliases": [
+      "TdT Reaction Buffer"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4027,
+    "name": "Tris-HCl",
+    "aliases": [],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4029,
+    "name": "Cobalt Chloride",
+    "aliases": [
+      "CoCl2"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2.5,
+        "unit": "mM"
+      }
+    }
+  },
+  {
+    "id": 4033,
+    "name": "Sodium Chloride",
+    "aliases": [
+      "nacl"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "M"
+      }
+    }
+  },
+  {
+    "id": 4034,
+    "name": "Phosphate Buffer Stock (Sodium-based)",
+    "aliases": [
+      "Phosphate Buffer"
+    ],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      },
+      "ph": 6.8
+    },
+    "notes": "Can be used for as phosphate salt."
+  },
+  {
+    "id": 4035,
+    "name": "3'-ONH2-dATP",
+    "aliases": [
+      "Untagged Aminoxy Reversible Terminators"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use."
+  },
+  {
+    "id": 4036,
+    "name": "3'-ONH2-dTTP",
+    "aliases": [
+      "Untagged Aminoxy Reversible Terminators"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use."
+  },
+  {
+    "id": 4037,
+    "name": "3'-ONH2-dCTP",
+    "aliases": [
+      "Untagged Aminoxy Reversible Terminators"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use."
+  },
+  {
+    "id": 4038,
+    "name": "3'-ONH2-dGTP",
+    "aliases": [
+      "Untagged Aminoxy Reversible Terminators"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use."
+  },
+  {
+    "id": 4004,
+    "name": "ZaTdT-R335L-K337G",
+    "aliases": [
+      "TdT",
+      "ZaTdT",
+      "ZaTdT Enzyme",
+      "TdT Series Enzyme Variants"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mg/mL"
+      }
+    },
+    "notes": "Already purified and ready to use in storage buffer stock."
+  },
+  {
+    "id": 9,
+    "name": "Aqueous Sodium Acetate Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 15,
+    "name": "Tween",
+    "aliases": ["Tween-20"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "%"
+      }
+    }
+  },
+  {
+    "id": 12,
+    "name": "Initiator-immobilized magnetic beads",
+    "aliases": [
+      "beads",
+      "Washed Dynabeads M-270 Streptavidin",
+      "Dynabeads M-270 Streptavidin",
+      "strand",
+      "oligonucleotide"
+    ],
+    "category": "Consumable",
+    "form": "Suspension",
+    "notes": "Initiators have been immobilized on the beads and washed. Remove storage buffer before use."
+  },
+  {
+    "id": 13,
+    "name": "Deblocking Buffer",
+    "aliases": [
+      "Deblocking reagent",
+      "Cleavage Reagent"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "X"
+      },
+      "ph": 5.5
+    },
+    "components": [
+      {
+        "name": "Sodium Nitrite",
+        "concentration": "700mM"
+      },
+      {
+        "name": "Sodium Acetate Buffer",
+        "concentration": "1M"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Reaction Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      },
+      "ph": 6.8
+    },
+    "components": [
+      {
+        "name": "NaCl",
+        "concentration": "1M"
+      },
+      {
+        "name": "Phosphate Buffer",
+        "concentration": "0.5M"
+      }
+    ]
+  }
+]

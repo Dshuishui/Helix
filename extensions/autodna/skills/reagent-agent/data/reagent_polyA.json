@@ -1,0 +1,98 @@
+[
+  {
+    "id": 4005,
+    "name": "Beads-bound iDNA-(N)8 templates",
+    "aliases": [],
+    "category": "Intermediate Product",
+    "form": "Suspension",
+    "properties": {}
+  },
+  {
+    "id": 4006,
+    "name": "dATP",
+    "aliases": [
+      "Deoxyadenosine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4007,
+    "name": "dCTP",
+    "aliases": [
+      "Deoxycytidine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4008,
+    "name": "dGTP",
+    "aliases": [
+      "Deoxyguanosine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4011,
+    "name": "dTTP",
+    "aliases": [
+      "Deoxythymidine triphosphate"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4017,
+    "name": "Nuclease-free water",
+    "aliases": [
+      "H2O",
+      "ddH2O",
+      "HPLC Water"
+    ],
+    "category": "Reagent",
+    "form": "Liquid",
+    "properties": {}
+  },
+  {
+    "id": 4025,
+    "name": "Terminal Deoxynucleotidyl Transferase",
+    "aliases": [
+      "TdT"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4026,
+    "name": "Terminal Deoxynucleotidyl Transferase Reaction Buffer",
+    "aliases": [
+      "TdT Reaction Buffer",
+      "10X TdT Reaction Buffer"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 4029,
+    "name": "Cobalt Chloride",
+    "aliases": [
+      "CoCl2"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2.5,
+        "unit": "mM"
+      }
+    }
+  }
+]

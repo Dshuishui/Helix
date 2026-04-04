@@ -1,0 +1,265 @@
+[
+  {
+    "id": 3001,
+    "name": "AMPure XP Beads",
+    "aliases": [
+      "AXP"
+    ],
+    "category": "Consumable",
+    "form": "Suspension",
+    "properties": {}
+  },
+  {
+    "id": 3003,
+    "name": "Blunt/TA Ligase Master Mix",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3004,
+    "name": "Bovine Serum Albumin",
+    "aliases": [
+      "BSA"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mg/ml"
+      }
+    }
+  },
+  {
+    "id": 3005,
+    "name": "DNA Control Sample",
+    "aliases": [
+      "DCS",
+      "diluted DCS"
+    ],
+    "category": "Sample",
+    "form": "Solution",
+    "properties": {},
+    "notes": "Diluted and ready to use"
+  },
+  {
+    "id": 3006,
+    "name": "purified DNA samples",
+    "aliases": [
+    ],
+    "category": "Sample",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3007,
+    "name": "Ethanol",
+    "aliases": [
+      "EtOH"
+    ],
+    "category": "Reactant",
+    "form": "Liquid",
+    "properties": {
+      "concentration": {
+        "value": 100,
+        "unit": "%"
+      }
+    }
+  },
+  {
+    "id": 3008,
+    "name": "EDTA",
+    "aliases": ["EDTA (blue cap)"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {},
+    "notes": "have blue cap EDTA only"
+  },
+  {
+    "id": 3009,
+    "name": "Elution Buffer",
+    "aliases": [
+      "EB"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3012,
+    "name": "Flow Cell Flush",
+    "aliases": [
+      "FCF"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3013,
+    "name": "Flow Cell Tether",
+    "aliases": [
+      "FCT"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3014,
+    "name": "80% ethanol in nuclease-free water",
+    "aliases": [
+      "80% ethanol"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 80,
+        "unit": "%"
+      }
+    }
+  },
+  {
+    "id": 3015,
+    "name": "gDNA",
+    "aliases": [
+      "genomic DNA"
+    ],
+    "category": "Sample",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3017,
+    "name": "Library Solution",
+    "aliases": [
+      "LIS"
+    ],
+    "category": "Solution",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3019,
+    "name": "MinION and GridION Flow Cell",
+    "aliases": [
+      "Flow Cell"
+    ],
+    "category": "Consumable",
+    "form": "Device",
+    "properties": {},
+    "documentation": [
+      "MinION-manual"
+    ]
+  },
+  {
+    "id": 3020,
+    "name": "Native Adapter",
+    "aliases": [
+      "NA"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3021,
+    "name": "Native Barcode",
+    "aliases": [
+      "NB01"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {},
+    "notes": "have NB01 only"
+  },
+  {
+    "id": 3022,
+    "name": "NEBNext FFPE DNA Repair Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3023,
+    "name": "NEBNext FFPE DNA Repair Mix",
+    "aliases": [],
+    "category": "Enzyme Mix",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3024,
+    "name": "NEBNext Quick Ligation Reaction Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "X"
+      }
+    }
+  },
+  {
+    "id": 3025,
+    "name": "nuclease-free water",
+    "aliases": [
+      "H2O",
+      "water"
+    ],
+    "category": "Reagent",
+    "form": "Liquid",
+    "properties": {}
+  },
+  {
+    "id": 3026,
+    "name": "Quick T4 DNA Ligase",
+    "aliases": [
+      "T4 DNA Ligase"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3027,
+    "name": "Sequencing Buffer",
+    "aliases": [
+      "SB"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3028,
+    "name": "Short Fragment Buffer",
+    "aliases": [
+      "SFB"
+    ],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3029,
+    "name": "Ultra II End-prep Enzyme Mix",
+    "aliases": [],
+    "category": "Enzyme Mix",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 3030,
+    "name": "Ultra II End-prep Reaction Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  }
+]

@@ -1,0 +1,249 @@
+[
+  {
+    "id": 2001,
+    "name": "Annealing Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      }
+    }
+  },
+  {
+    "id": 2002,
+    "name": "Transcription Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      }
+    }
+  },
+  {
+    "id": 2003,
+    "name": "Oligo A",
+    "aliases": [
+      "Oligo-1",
+      "sense strand template"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 100,
+        "unit": "pmol/μl"
+      }
+    },
+    "notes": "Only have Oligo-1 as Oligo A, complementary to Oligo B/Oligo-2"
+  },
+  {
+    "id": 2004,
+    "name": "Oligo B",
+    "aliases": [
+      "Oligo-2",
+      "complementary to sense strand template"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 100,
+        "unit": "pmol/μl"
+      }
+    },
+    "notes": "Only have Oligo-2 as Oligo B, complementary to Oligo A/Oligo-1"
+  },
+  {
+    "id": 2005,
+    "name": "Isopropanol",
+    "aliases": [
+      "100% isopropanol"
+    ],
+    "category": "Reagent",
+    "form": "Liquid",
+    "properties": {
+      "concentration": {
+        "value": 100,
+        "unit": "%"
+      }
+    }
+  },
+  {
+    "id": 2006,
+    "name": "Sodium Acetate",
+    "aliases": [],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 3,
+        "unit": "M"
+      }
+    }
+  },
+  {
+    "id": 2008,
+    "name": "Ethanol",
+    "aliases": [
+      "80% ethanol",
+      "99.5% ethanol",
+      "ethanol (95-100%)"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {},
+    "notes": "Used in various concentrations for washing and precipitation."
+  },
+  {
+    "id": 2009,
+    "name": "ATP Solution",
+    "aliases": [
+      "Adenosine triphosphate"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mM"
+      }
+    }
+  },
+  {
+    "id": 2012,
+    "name": "CTP Solution",
+    "aliases": [
+      "Cytidine triphosphate"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mM"
+      }
+    }
+  },
+  {
+    "id": 2013,
+    "name": "DNA Digestion Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 2014,
+    "name": "DNase I",
+    "aliases": [
+      "Deoxyribonuclease I"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "U/μl"
+      }
+    },
+    "notes": "RNase free is not guaranteed."
+  },
+  {
+    "id": 2015,
+    "name": "Nuclease-Free Water",
+    "aliases": [
+      "DNase/RNase-Free Water",
+      "RNase free dH2O",
+      "Sterile water"
+    ],
+    "category": "Reagent",
+    "form": "Liquid",
+    "properties": {}
+  },
+  {
+    "id": 2018,
+    "name": "GTP Solution",
+    "aliases": [
+      "Guanosine triphosphate"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mM"
+      }
+    }
+  },
+  {
+    "id": 2019,
+    "name": "MagBinding Beads",
+    "aliases": [],
+    "category": "Consumable",
+    "form": "Suspension",
+    "properties": {}
+  },
+  {
+    "id": 2021,
+    "name": "RNA MagBinding Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 2022,
+    "name": "RNA Prep Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {}
+  },
+  {
+    "id": 2023,
+    "name": "RNase Inhibitor",
+    "aliases": [],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 40,
+        "unit": "U/μl"
+      }
+    }
+  },
+  {
+    "id": 2026,
+    "name": "T7 RNA Polymerase",
+    "aliases": [],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "U/μl"
+      }
+    }
+  },
+  {
+    "id": 2030,
+    "name": "UTP Solution",
+    "aliases": [
+      "Uridine triphosphate"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mM"
+      }
+    }
+  }
+]

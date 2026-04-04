@@ -1,0 +1,293 @@
+[
+  {
+    "id": 1,
+    "name": "Cobalt Chloride",
+    "aliases": [
+      "CoCl2"
+    ],
+    "category": "Reagent",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1.25,
+        "unit": "mM"
+      }
+    }
+  },
+  {
+    "id": 2,
+    "name": "Nuclease-Free Water",
+    "aliases": [
+      "H2O",
+      "Distilled Water",
+      "HPLC Water"
+    ],
+    "category": "Reactant",
+    "form": "Liquid",
+    "properties": {}
+  },
+  {
+    "id": 3,
+    "name": "Sodium Chloride",
+    "aliases": [
+      "nacl"
+    ],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "M"
+      }
+    }
+  },
+  {
+    "id": 5,
+    "name": "Phosphate Buffer Stock (Sodium-based)",
+    "aliases": [
+      "Phosphate Buffer"
+    ],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      },
+      "ph": 6.8
+    },
+    "notes": "Can be used for as phosphate salt."
+  },
+  {
+    "id": 6,
+    "name": "Terminal Deoxynucleotidyl Transferase",
+    "aliases": [
+      "TdT",
+      "ZaTdT Enzyme",
+      "ZaTdT-R335L-K337G",
+      "TdT Series Enzyme Variants"
+    ],
+    "category": "Enzyme",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 50,
+        "unit": "mg/mL"
+      }
+    },
+    "notes": "Already purified and ready to use in storage buffer stock."
+  },
+  {
+    "id": 7,
+    "name": "3'-ONH2-dnTP",
+    "aliases": ["Untagged Aminoxy Reversible Terminators", "3-ONH2-dNTP", "Reversible Terminators"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "documentation": [
+      "3-ONH2-dnTP-manual"
+    ],
+    "notes": "Cleaned, purified, and ready to use."
+  },
+  {
+    "id": 9,
+    "name": "Aqueous Sodium Acetate Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "ph": 5.5
+    }
+  },
+  {
+    "id": 15,
+    "name": "Tween",
+    "aliases": ["Tween-20"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "%"
+      }
+    }
+  },
+  {
+    "id": 10,
+    "name": "B&W Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2,
+        "unit": "X"
+      }
+    },
+    "components": [
+      {
+        "name": "Tris-HCl"
+      },
+      {
+        "name": "EDTA"
+      },
+      {
+        "name": "NaCl"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Lysis Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 2,
+        "unit": "X"
+      }
+    },
+    "components": [
+      {
+        "name": "Potassium Phosphate Buffer",
+        "concentration": "50mM"
+      },
+      {
+        "name": "NaCl",
+        "concentration": "100mM"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Initiator-immobilized magnetic beads",
+    "aliases": [
+      "beads",
+      "Washed Dynabeads M-270 Streptavidin",
+      "Dynabeads M-270 Streptavidin",
+      "Streptavidin-coated magnetic beads",
+      "strand",
+      "oligonucleotide"
+    ],
+    "category": "Consumable",
+    "form": "Suspension",
+    "documentation": [
+      "beads-manual"
+    ],
+    "notes": "Initiators have been immobilized on the beads and washed. Remove storage buffer before use."
+  },
+  {
+    "id": 13,
+    "name": "Cleavage/Deblocking Buffer",
+    "aliases": ["Cleavage reagent", "Deblocking reagent"],
+    "category": "Buffer",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 1,
+        "unit": "X"
+      },
+      "ph": 5.5
+    },
+    "components": [
+      {
+        "name": "Sodium Nitrite",
+        "concentration": "700mM"
+      },
+      {
+        "name": "Sodium Acetate Buffer",
+        "concentration": "1M"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Reaction Buffer",
+    "aliases": [],
+    "category": "Buffer",
+    "form": "Stock Solution",
+    "properties": {
+      "concentration": {
+        "value": 10,
+        "unit": "X"
+      },
+      "ph": 6.8
+    },
+    "components": [
+      {
+        "name": "NaCl",
+        "concentration": "1M"
+      },
+      {
+        "name": "Phosphate Buffer",
+        "concentration": "0.5M"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "3'-ONH2-dATP",
+    "aliases": ["3-ONH2-dATP"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use.",
+    "documentation": ["3-ONH2-dnTP-manual"]
+  },
+  {
+    "id": 22,
+    "name": "3'-ONH2-dCTP",
+    "aliases": ["3-ONH2-dCTP"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use.",
+    "documentation": ["3-ONH2-dnTP-manual"]
+  },
+  {
+    "id": 23,
+    "name": "3'-ONH2-dGTP",
+    "aliases": ["3-ONH2-dGTP"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use.",
+    "documentation": ["3-ONH2-dnTP-manual"]
+  },
+  {
+    "id": 24,
+    "name": "3'-ONH2-dTTP",
+    "aliases": ["3-ONH2-dTTP"],
+    "category": "Reactant",
+    "form": "Solution",
+    "properties": {
+      "concentration": {
+        "value": 5,
+        "unit": "mM"
+      }
+    },
+    "notes": "Cleaned, purified, and ready to use.",
+    "documentation": ["3-ONH2-dnTP-manual"]
+  }
+]
