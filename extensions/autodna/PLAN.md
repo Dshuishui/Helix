@@ -43,13 +43,16 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 - [x] 推送到 `origin`（`Dshuishui/Helix`）
 - [x] 创建 `extensions/autodna/` 目录结构
 - [x] 分析 AutoDNA 项目结构和 6 个 Agent 的逻辑
+- [x] **第一个 Skill：Reagent Agent（试点完成）**
+  - [x] 分析 `Reagent.py` 和库存 JSON 完整逻辑
+  - [x] 编写 `skills/reagent-agent/SKILL.md`
+  - [x] 编写 `scripts/get_inventory.py`（自包含，不依赖原项目）
+  - [x] 打包、注册到 OpenClaw workspace
+  - [x] 飞书验证通过，输出结果正确
+  - [x] 整理注册标准流程文档 `SKILL-REGISTRATION-GUIDE.md`
 
 ### 进行中
-- [ ] **第一个 Skill：Reagent Agent**（试点）
-  - [ ] 读取并理解 `Reagent.py` 和库存 JSON 的完整逻辑
-  - [ ] 编写 `skills/reagent-agent/SKILL.md`
-  - [ ] 配置飞书 + API Key 实际触发验证
-  - [ ] 对比输出效果与原 AutoDNA Reagent Agent 是否一致
+- [ ] **第二个 Skill：Literature Agent**
 
 ### 待办（试点验证后依次进行）
 - [ ] Literature Agent → Skill

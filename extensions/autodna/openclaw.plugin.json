@@ -1,0 +1,11 @@
+{
+  "id": "autodna",
+  "name": "AutoDNA",
+  "description": "AutoDNA lab automation agents as OpenClaw skills.",
+  "skills": ["./skills"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

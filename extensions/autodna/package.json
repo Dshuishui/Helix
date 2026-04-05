@@ -1,0 +1,8 @@
+{
+  "name": "@openclaw/autodna",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AutoDNA multi-agent skills for OpenClaw",
+  "type": "module",
+  "openclaw": {}
+}

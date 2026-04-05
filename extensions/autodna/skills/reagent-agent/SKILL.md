@@ -17,7 +17,7 @@ Before doing any analysis, run the following command to get the formatted
 inventory text. This is deterministic and must not be skipped.
 
 ```bash
-python3 extensions/autodna/skills/reagent-agent/tools/get_inventory.py [experiment_type]
+python3 skills/reagent-agent/scripts/get_inventory.py [experiment_type]
 ```
 
 Replace `[experiment_type]` with one of: `rpa`, `rna`, `storage`, `amplification`,

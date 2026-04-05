@@ -15,7 +15,7 @@ import sys
 import json
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "references")
 
 EXPERIMENT_TYPE_MAP = {
     "rpa":           "reagent_RPA.json",
