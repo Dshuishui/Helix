@@ -52,11 +52,17 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
   - [x] 整理注册标准流程文档 `SKILL-REGISTRATION-GUIDE.md`
 
 ### 进行中
-- [ ] **第二个 Skill：Literature Agent**
+- [ ] **Reagent Agent 效果对比验证**（需 Gemini API Key 可用时进行）
+  - 测试用例：NC-1、Nuclease-Free Water、EDTA、Tween-20、RPA Reagent Buffer（RPA实验）
+  - 运行方式：见下方"效果对比验证方法"章节
+  - 对比维度：每个试剂的 available/not available 结论是否一致
+- [ ] **第二个 Skill：Protocol Agent**
+  - 核心逻辑：实验需求 → 分步骤实验流程，仅依赖 LLM，无外部工具
+  - 提示词来源：`../AutoDNA/AutoDNA-python/scientist/prompts/agents/Protocol/prompt.py`
+  - 参考注册流程：`SKILL-REGISTRATION-GUIDE.md`
 
-### 待办（试点验证后依次进行）
-- [ ] Literature Agent → Skill
-- [ ] Protocol Agent → Skill
+### 待办
+- [ ] Literature Agent → Skill（依赖 paper-qa 库 + 论文数据库，基础设施复杂，暂缓）
 - [ ] Code Agent → Skill
 - [ ] Hardware Agent → Skill
 - [ ] Hypothesis Agent → Skill
@@ -97,6 +103,65 @@ extensions/autodna/
 ├── prompts/agents/          # 各 Agent 的提示词
 └── input/reagents/          # 试剂库存 JSON（10+ 种类）
 ```
+
+---
+
+## 效果对比验证方法
+
+### 前提条件
+- Gemini API Key 配置到环境变量：`export GEMINI_API_KEY=your_key`
+- 原 AutoDNA 项目依赖已安装：`cd ../AutoDNA/AutoDNA-python && pip install -r requirements.txt`
+
+### 运行原 AutoDNA Reagent Agent
+
+原项目的 Reagent Agent 在完整流程中被调用，单独跑需要绕过编排系统。
+最直接的方式是写一个最小测试脚本：
+
+```python
+# 在 ../AutoDNA/AutoDNA-python/scientist/ 目录下运行
+import os
+os.environ["GEMINI_API_KEY"] = "your_key"
+
+from tools.utils import get_inventory
+from agents.Reagent import format_reagents_json, pharmacy_prompt_output_format
+from llm.model import pharmacy_model
+from langchain_core.prompts import PromptTemplate
+
+# 1. 获取库存（RPA 实验）
+from config import settings
+settings.rpa = True
+reagent_repo = get_inventory(True)
+reagent_repo_str = format_reagents_json(reagent_repo)
+
+# 2. 构造请求
+requested = "NC-1, Nuclease-Free Water, EDTA, Tween-20, RPA Reagent Buffer"
+prompt = PromptTemplate.from_template("""
+You are a reagent manager...
+{rules_format}
+{reagents_info}
+{requested_reagents}
+""")
+final_prompt = prompt.format(
+    reagents_info=reagent_repo_str,
+    rules_format=pharmacy_prompt_output_format,
+    requested_reagents=requested
+)
+
+# 3. 调用模型
+response = pharmacy_model.invoke(final_prompt)
+print(response.content)
+```
+
+### 对比维度
+只比较每个试剂的结论（不要求逐字相同）：
+
+| 试剂 | 原 AutoDNA 结论 | OpenClaw Skill 结论 | 一致？ |
+|------|----------------|---------------------|-------|
+| NC-1 | | available, 1X | |
+| Nuclease-Free Water | | available, liquid | |
+| EDTA | | not available | |
+| Tween-20 | | available, 1% | |
+| RPA Reagent Buffer | | | |
 
 ---
 
