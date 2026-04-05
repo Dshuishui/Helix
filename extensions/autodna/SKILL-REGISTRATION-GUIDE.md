@@ -51,16 +51,23 @@ description: |
 - `scripts/`：Python 脚本（路径写法见下方注意事项）
 - `references/`：JSON 数据文件等
 
+**脚本自包含原则：** scripts/ 下的 Python 文件必须能独立运行，只依赖标准库或已安装的第三方包。不要从原 AutoDNA 项目直接复制依赖其内部模块（config、settings、file_manager 等）的文件——这类文件脱离原项目上下文会 ImportError。需要的数据文件应复制到 `references/` 目录下，脚本通过 `os.path.dirname(__file__)` 相对路径访问。
+
+**目录保持干净：** skill 目录下只放运行所需的文件。聊天记录、草稿、测试输出等无关文件打包时会被打进 .skill，必须提前移走。
+
 **脚本路径注意事项：**
 
 Skill 安装后，agent 的工作目录是 `~/.openclaw/workspace/`，脚本路径必须相对于此：
 
 ```bash
-# ✅ 正确：相对于 workspace
+# ✅ 正确：相对于 workspace，且用 python3
 python3 skills/<skill-name>/scripts/your_script.py
 
 # ❌ 错误：使用了 repo 的绝对路径
 python3 extensions/autodna/skills/<skill-name>/scripts/your_script.py
+
+# ❌ 错误：macOS 没有 python 命令
+python skills/<skill-name>/scripts/your_script.py
 ```
 
 **脚本内部路径注意事项：**
@@ -85,15 +92,25 @@ python3 extensions/autodna/skills/<skill-name>/scripts/your_script.py [args]
 
 ### Step 3：打包成 .skill 文件
 
+**打包前检查：** 确认 skill 目录内只有必要文件（SKILL.md、scripts/、references/、assets/），不要有聊天记录、测试输出、草稿等无关文件，否则会被打包进去。
+
 ```bash
 python3 /opt/homebrew/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
   extensions/autodna/skills/<skill-name> \
   /tmp/autodna-skills
 ```
 
+**注意：** 此命令需要写入 `/tmp`，会被 Claude Code 沙箱拦截。执行时需要在 Claude Code 中使用 `dangerouslyDisableSandbox: true`，或在普通终端中直接运行。
+
 打包脚本会自动验证结构和格式，输出 `/tmp/autodna-skills/<skill-name>.skill`。
 
 ### Step 4：安装到 workspace
+
+**安装前清理残留配置（每次都要执行）：**
+```bash
+openclaw config unset plugins.entries.<skill-name>
+```
+如果之前有过失败的安装尝试，config 里可能留有残留条目。提前清理可以避免安装时出现 warning。
 
 ```bash
 # 安装到 OpenClaw extensions 目录
@@ -103,6 +120,8 @@ openclaw plugins install /tmp/autodna-skills/<skill-name>.skill
 cd ~/.openclaw/workspace/skills
 unzip -o /tmp/autodna-skills/<skill-name>.skill
 ```
+
+**注意：** `plugins install` 只把 .skill 文件放到 `~/.openclaw/extensions/` 做存档管理，不会使 Skill 生效。必须执行 `unzip` 步骤，Skill 才会出现在 `~/.openclaw/workspace/skills/` 并被加载。
 
 ### Step 5：确认注册成功
 
@@ -162,10 +181,19 @@ cp /tmp/autodna-skills/<skill-name>.skill ~/.openclaw/extensions/<skill-name>.sk
 检查是否完成了 Step 4 的 `unzip` 步骤，仅 `plugins install` 不够。
 
 **Q: 脚本找不到文件（FileNotFoundError）？**  
-检查脚本内的 `DATA_DIR` 路径，确保指向 `references/` 而非 `data/`。
+检查脚本内的 `DATA_DIR` 路径，确保用 `os.path.dirname(__file__)` 相对定位，并指向正确目录名（如 `references/` 而非 `data/`）。
 
 **Q: 打包时提示 stale config entry？**  
-运行 `openclaw config unset plugins.entries.<skill-name>` 清理遗留配置。
+运行 `openclaw config unset plugins.entries.<skill-name>` 清理遗留配置。建议每次安装前都提前执行。
 
 **Q: Skill 已注册但飞书里触发不了？**  
 必须在飞书发送 `/new` 或 `/reset` 开启新会话，旧会话不会自动加载新注册的 Skill。
+
+**Q: 运行脚本时提示 `python: command not found`？**  
+macOS 没有 `python` 命令，只有 `python3`。SKILL.md 里调用脚本必须用 `python3`。
+
+**Q: 复制过来的 Python 脚本运行时报 ImportError？**  
+从原 AutoDNA 项目复制的工具文件（如 utils.py、reagent_manager.py）依赖原项目的 config/settings 模块，无法独立运行。Skill 内的脚本必须是自包含的，只用标准库或明确安装的第三方包。
+
+**Q: 打包命令被 Claude Code 沙箱拦截（Operation not permitted）？**  
+package_skill.py 需要写入 `/tmp`，会被 Claude Code 沙箱阻止。在 Claude Code 中执行时需授权禁用沙箱，或直接在系统终端中运行打包命令。
