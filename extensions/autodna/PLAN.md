@@ -30,8 +30,8 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 
 - **Python 核心逻辑**：保留，不简化
 - **LangChain @tool 装饰器**：替换为 OpenClaw Skill 定义
-- **LangGraph StateGraph 编排**：替换为 OpenClaw Skills 的依赖声明和自动编排
-- **触发/调用方式**：飞书机器人（`extensions/feishu/` 已有支持）
+- **LangGraph StateGraph 编排**：替换为 OpenClaw Orchestrator Skill
+- **触发/调用方式**：飞书机器人
 - **MCP 工具**：暂不实现，等多个 Agent 稳定后再考虑封装
 
 ---
@@ -39,34 +39,60 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 ## 进度
 
 ### 已完成
-- [x] 创建 `AutoDNA-Skills` 分支（基于 upstream/main）
-- [x] 推送到 `origin`（`Dshuishui/Helix`）
+
+- [x] 创建 `AutoDNA-Skills` 分支，推送到 `Dshuishui/Helix`
 - [x] 创建 `extensions/autodna/` 目录结构
-- [x] 分析 AutoDNA 项目结构和 6 个 Agent 的逻辑
-- [x] **第一个 Skill：Reagent Agent（试点完成）**
-  - [x] 分析 `Reagent.py` 和库存 JSON 完整逻辑
-  - [x] 编写 `skills/reagent-agent/SKILL.md`
-  - [x] 编写 `scripts/get_inventory.py`（自包含，不依赖原项目）
-  - [x] 打包、注册到 OpenClaw workspace
-  - [x] 飞书验证通过，输出结果正确
-  - [x] 整理注册标准流程文档 `SKILL-REGISTRATION-GUIDE.md`
+- [x] 分析 AutoDNA 项目全部 6 个 Agent 的逻辑
+- [x] 整理 `SKILL-REGISTRATION-GUIDE.md`（含踩坑经验，持续更新）
+- [x] 精简 `CLAUDE.md`，原版保留为 `CLAUDE-upstream.md`
+
+- [x] **Skill 1：Reagent Agent**
+  - 分析 `Reagent.py` + 库存 JSON 逻辑
+  - 编写 `skills/reagent-agent/SKILL.md`
+  - 编写 `scripts/get_inventory.py`（自包含，不依赖原项目）
+  - 复制 9 个试剂库存 JSON 到 `references/`
+  - 打包注册，飞书验证通过
+
+- [x] **Skill 2：Protocol Agent**
+  - 分析 `Protocol.py` + `prompts/agents/Protocol/prompt.py`
+  - 识别 5 种模式（INITIAL / REFINEMENT / ADJUSTMENT / OPTIMIZING / ALGORITHM）
+  - 编写 `skills/protocol-agent/SKILL.md`（覆盖 INITIAL / ADJUSTMENT / OPTIMIZING 三种模式）
+  - 补充 RPA 专用规则（Automation + Readiness + 无操作细节）
+  - 打包注册，飞书验证通过（两轮测试，修复 DNA 提取步骤问题）
+
+- [x] **Skill 3：Hypothesis Agent**
+  - 分析 `Hypothesis.py` + `prompts/agents/Hardware/prompt.py`（提示词复用）
+  - 识别 3 阶段逻辑（Stage A 生成假设 → Stage B 摘要 → Stage C 生成建议）
+  - Stage B 为内部路由步骤，迁移时省略，直接 A→C
+  - 编写 `skills/hypothesis-agent/SKILL.md`
+  - 打包注册，飞书验证通过
+
+- [x] **三 Agent 手动串联验证**（`test-logs/three-agent-chain-test-01.md`）
+  - Protocol(INITIAL) → Reagent → Protocol(ADJUSTMENT) → Hypothesis 四步串联
+  - 数据通过对话上下文自动传递，无需手动复制粘贴
+  - 验证结论：框架可行，各 Skill 行为符合预期
+  - 已知限制：Protocol 第一次生成不知道库存，ADJUSTMENT 后流程偏简；串联完整化后解决
 
 ### 进行中
-- [ ] **Reagent Agent 效果对比验证**（需 Gemini API Key 可用时进行）
-  - 测试用例：NC-1、Nuclease-Free Water、EDTA、Tween-20、RPA Reagent Buffer（RPA实验）
-  - 运行方式：见下方"效果对比验证方法"章节
+
+- [ ] **Reagent Agent 效果对比验证**（等 Gemini API Key 可用时进行）
+  - 测试用例：NC-1、Nuclease-Free Water、EDTA、Tween-20、RPA Reagent Buffer（RPA 实验）
   - 对比维度：每个试剂的 available/not available 结论是否一致
-- [ ] **第二个 Skill：Protocol Agent**
-  - 核心逻辑：实验需求 → 分步骤实验流程，仅依赖 LLM，无外部工具
-  - 提示词来源：`../AutoDNA/AutoDNA-python/scientist/prompts/agents/Protocol/prompt.py`
-  - 参考注册流程：`SKILL-REGISTRATION-GUIDE.md`
 
 ### 待办
-- [ ] Literature Agent → Skill（依赖 paper-qa 库 + 论文数据库，基础设施复杂，暂缓）
-- [ ] Code Agent → Skill
-- [ ] Hardware Agent → Skill
-- [ ] Hypothesis Agent → Skill
-- [ ] 串联：用 OpenClaw 编排替代 `ai_scientist.py` 的手工 Planner 逻辑
+
+- [ ] **Skill 4：Code Agent**（下一个迁移目标）
+  - 输入：Protocol Agent 输出的实验流程
+  - 职责：生成可执行的 Python 自动化脚本
+  - 原文件：`agents/Code.py`
+
+- [ ] Literature Agent → Skill（依赖 paper-qa + 400 篇论文数据库，基础设施复杂，暂缓）
+- [ ] Hardware Agent → Skill（依赖具体硬件设备 API，高度定制，暂缓）
+
+- [ ] **Orchestrator Skill**（所有 Agent 迁移完成后）
+  - 替代 `ai_scientist.py` 的手工编排逻辑
+  - 自动按顺序调用各 Skill，强制每步重新注入 Skill 指令（解决"不一致风险"）
+  - 完整流程：Protocol(INITIAL) → Reagent → Protocol(ADJUSTMENT) → [run] → Hypothesis → Protocol(OPTIMIZING) → Code → Hardware
 
 ---
 
@@ -74,10 +100,23 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 
 ```
 extensions/autodna/
-├── PLAN.md                        # 本文件，迁移计划和进度
+├── PLAN.md                          # 本文件
+├── SKILL-REGISTRATION-GUIDE.md      # 注册标准流程 + 踩坑经验
+├── CLAUDE-upstream.md               # 原始 OpenClaw CLAUDE.md 备份
+├── test-logs/                       # 飞书测试聊天记录
+│   ├── reagent-agent-test-01.md
+│   ├── protocol-agent-test-01-before-fix.md
+│   ├── protocol-agent-test-02-after-fix.md
+│   └── three-agent-chain-test-01.md
 └── skills/
-    └── reagent-agent/
-        └── SKILL.md               # Reagent Agent 的 Skill 定义（待完成）
+    ├── reagent-agent/
+    │   ├── SKILL.md
+    │   ├── scripts/get_inventory.py
+    │   └── references/              # 9 个试剂库存 JSON
+    ├── protocol-agent/
+    │   └── SKILL.md
+    └── hypothesis-agent/
+        └── SKILL.md
 ```
 
 ---
@@ -88,12 +127,12 @@ extensions/autodna/
 ../AutoDNA/AutoDNA-python/scientist/
 ├── ai_scientist.py          # 主编排引擎（1124行）
 ├── agents/
-│   ├── Reagent.py           # 试点迁移目标
-│   ├── Literature.py
-│   ├── Protocol.py
-│   ├── Code.py
-│   ├── Hardware.py
-│   └── Hypothesis.py
+│   ├── Reagent.py           ✅ 已迁移
+│   ├── Protocol.py          ✅ 已迁移
+│   ├── Hypothesis.py        ✅ 已迁移
+│   ├── Code.py              ⬜ 待迁移（下一个）
+│   ├── Hardware.py          ⬜ 待迁移（暂缓）
+│   └── Literature.py        ⬜ 待迁移（暂缓）
 ├── llm/
 │   ├── model.py             # 模型初始化（Gemini 2.5-Pro）
 │   └── my_react_agent.py    # LangGraph ReAct 实现
@@ -108,60 +147,33 @@ extensions/autodna/
 
 ## 效果对比验证方法
 
-### 前提条件
-- Gemini API Key 配置到环境变量：`export GEMINI_API_KEY=your_key`
-- 原 AutoDNA 项目依赖已安装：`cd ../AutoDNA/AutoDNA-python && pip install -r requirements.txt`
-
-### 运行原 AutoDNA Reagent Agent
-
-原项目的 Reagent Agent 在完整流程中被调用，单独跑需要绕过编排系统。
-最直接的方式是写一个最小测试脚本：
+### Reagent Agent 对比（等 Gemini API Key 可用）
 
 ```python
 # 在 ../AutoDNA/AutoDNA-python/scientist/ 目录下运行
-import os
-os.environ["GEMINI_API_KEY"] = "your_key"
-
 from tools.utils import get_inventory
 from agents.Reagent import format_reagents_json, pharmacy_prompt_output_format
 from llm.model import pharmacy_model
 from langchain_core.prompts import PromptTemplate
-
-# 1. 获取库存（RPA 实验）
 from config import settings
+
 settings.rpa = True
 reagent_repo = get_inventory(True)
 reagent_repo_str = format_reagents_json(reagent_repo)
 
-# 2. 构造请求
 requested = "NC-1, Nuclease-Free Water, EDTA, Tween-20, RPA Reagent Buffer"
-prompt = PromptTemplate.from_template("""
-You are a reagent manager...
-{rules_format}
-{reagents_info}
-{requested_reagents}
-""")
-final_prompt = prompt.format(
-    reagents_info=reagent_repo_str,
-    rules_format=pharmacy_prompt_output_format,
-    requested_reagents=requested
-)
-
-# 3. 调用模型
-response = pharmacy_model.invoke(final_prompt)
-print(response.content)
+# ... 构造 prompt 并调用
 ```
 
-### 对比维度
-只比较每个试剂的结论（不要求逐字相同）：
+对比维度（只比对结论，不要求逐字相同）：
 
 | 试剂 | 原 AutoDNA 结论 | OpenClaw Skill 结论 | 一致？ |
 |------|----------------|---------------------|-------|
 | NC-1 | | available, 1X | |
 | Nuclease-Free Water | | available, liquid | |
 | EDTA | | not available | |
-| Tween-20 | | available, 1% | |
-| RPA Reagent Buffer | | | |
+| Tween-20 | | not available | |
+| RPA Reagent Buffer | | available, 1X | |
 
 ---
 
