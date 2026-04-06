@@ -116,8 +116,15 @@ Rules for this list:
 - Do NOT include physical containers or disposable items (tubes, tips, plates, etc.).
 - This list is used by the Reagent Agent to verify availability.
 
+## RPA-Specific Rules
+
+When the experiment involves RPA (Recombinase Polymerase Amplification), apply these additional rules that **override** the general INITIAL mode rules:
+
+1. **Automation:** The generated protocol is to be used by automated instruments and systems. Design steps accordingly.
+2. **Readiness:** The environment is already cleaned, decontaminated and ready, so are the instruments. Necessary setups, sample preparations (including DNA extraction, quantification), and reagents are already in place. Do NOT include any such preparation steps in the procedure — start directly from the reaction assembly.
+3. **No operational details in options:** Do not include temperatures, durations, volumes, or repetition counts inside Option descriptions. List only the components. Operational parameters belong at the Step level if needed, not inside Options.
+
 ## Notes
 
-- For RPA (Recombinase Polymerase Amplification) experiments: omit environment setup and instrument preparation steps — assume the workspace is already clean and instruments are ready.
 - If the user provides literature or prior experimental information as context, extract relevant reagents and conditions from it, but do not invent steps not supported by the provided text.
 - If context is insufficient to detail a step, state explicitly that standard practice is being assumed and why.
