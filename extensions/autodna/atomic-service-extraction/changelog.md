@@ -92,9 +92,65 @@ The ST file has been updated accordingly; all `⚠️` markers removed.
 
 ### Remaining open questions
 
-- [ ] `G_Module_Process` actual MW address (depends on global memory layout after adding to GVL)
 - [ ] PLC IP address and Modbus TCP port for C++ integration testing
-- [ ] Whether `Synthesis.metal_bath1 / metal_bath2` are BOOL or INT in the actual GVL
-      (F09 uses both `=0` and `:=1` integer style; current ST uses BOOL TRUE — needs alignment)
-- [ ] Gripper optical sensor check (Problem 6 from earlier review) — intentionally
-      deferred; will add as a separate step once basic flow is validated on hardware
+      (need to check PLC hardware config or project settings; default IP may be 192.168.1.100, port 502)
+
+---
+
+## 2026-04-08 — Module control architecture clarified and ST code updated
+
+### Key discoveries
+
+1. **`G_Module_Process` does not need a fixed MW address**
+   The scheduler (`F20_00启动流程`) uses `G_F20_Start[i]` and `G_F20_End[i]`
+   (both bound to fixed addresses: `%MW50000` and `%MW50050`) as the C++/PLC interface.
+   `G_Module_Process` is internal to PLC; its step variable (`M_Show_Step_AUTO`)
+   is managed by the scheduler and the atomic service itself.
+
+2. **`Synthesis.metal_bath1 / metal_bath2` are confirmed BOOL**
+   The `G_Synthesis` data type definition in `DNA合成.xml` explicitly declares
+   these as `<BOOL />`. The ST code's `:= TRUE` assignment is correct and consistent.
+
+3. **The atomic service must return to Step 100 for scheduler handshake**
+   The `F20_00启动流程` scheduler only writes `G_F20_End[i]` when it detects
+   `G_Module_Process[i].M_Show_Step_AUTO = 100`. The previous ST code stopped at
+   Step 1000, breaking the completion signal. Now fixed.
+
+4. **Gripper optical sensor check added as Step 165**
+   Safety interlock: after clamp command (Step 160), verify that the gripper
+   actually holds a carrier via `G_Sensor[11].Input` (搬运夹爪感应光电).
+   Prevents empty‑clamp movements that could cause collisions or lost carriers.
+
+### ST file changes in this revision
+
+1. **Header updated**
+   - Completion description changed from `M_Signaling_Completed = TRUE` to
+     "`M_Show_Step_AUTO` returns to 100, scheduler reads `G_F20_End[9]` to confirm"
+
+2. **Step 160–165 modified**
+   - Step 160 jump target changed from 170 → 165
+   - New Step 165: `IF G_Sensor[11].Input THEN ...` (photoelectric check)
+   - Comments include sensor name, address, and polarity notes
+
+3. **Step 900 modified**
+   - Jump target changed from 1000 → 100
+   - Added explanatory comment about scheduler handshake
+   - Step 1000 removed entirely
+
+### Updated variable declaration (confirmed correct)
+```pascal
+VAR_GLOBAL RETAIN PERSISTENT
+    G_P_F20_09_Input AT %MW50900 : S09_Module_Input;
+    G_F20_Start      AT %MW50000 : ARRAY [0..30] OF UINT;
+    G_F20_End        AT %MW50050 : ARRAY [0..30] OF UINT;
+END_VAR
+```
+
+### C++ control flow (now fully defined)
+1. Write `%MW50009` (`G_F20_Start[9]`) = any non‑zero integer → trigger
+2. Write `%MW50909` (`G_P_F20_09_Input.Sample_Num`) = 1 or 2 → select sample
+3. Poll `%MW50059` (`G_F20_End[9]`) until it equals the value written in step 1 → done
+
+### Ready for testing
+With these updates, the atomic service is architecturally complete and ready
+for stage‑1 (simulation) and stage‑2 (hardware semi‑real) verification.

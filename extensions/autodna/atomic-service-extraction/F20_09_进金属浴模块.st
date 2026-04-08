@@ -5,7 +5,8 @@
            .Sample_Num  UINT   样品编号 (1 = 样品1, 2 = 样品2)
            .Plate_Pos   DINT   保留字段，当前未使用（内部根据 Sample_Num 决定目标位）
    状态：G_Module_Process[9].M_Show_Step_AUTO
-   完成：G_Module_Process[9].M_Signaling_Completed = TRUE
+   完成：G_Module_Process[9].M_Show_Step_AUTO 回到 100
+         调度器读 G_F20_End[9] = G_F20_Start[9] 确认完成
 
    X/Y 轴 M_PT 索引依据（已由硬件工程师确认）:
      M_PT[0]  初始位
@@ -150,6 +151,15 @@ CASE G_Module_Process[9].M_Show_Step_AUTO OF
             = G_HC_keep_jaw[搬运夹爪].M_PT[3] THEN
             Synthesis.sample_selection := 0;
             Synthesis.Handing_types := 5;   (* 夹爪持有96孔板，类型5 *)
+            G_Module_Process[9].M_Show_Step_AUTO := 165;
+        END_IF
+
+(* ── Step 165：搬运夹爪光电判定 ── *)
+(* 确认载具已被可靠夹持，防止空夹继续运动导致碰撞或实验数据错误 *)
+(* 传感器：G_Sensor[11].Input（X02[15]，搬运夹爪感应光电） *)
+(* 极性：常开，载具到位时闭合（= TRUE）；若实际相反请改为 NOT G_Sensor[11].Input *)
+    165:
+        IF G_Sensor[11].Input THEN
             G_Module_Process[9].M_Show_Step_AUTO := 170;
         END_IF
 
@@ -225,13 +235,11 @@ CASE G_Module_Process[9].M_Show_Step_AUTO OF
             G_Module_Process[9].M_Show_Step_AUTO := 900;
         END_IF
 
-(* ── Step 900：标记完成 ── *)
+(* ── Step 900：标记完成，回到空闲 ── *)
+(* M_Signaling_Completed 置 TRUE，步序回到 100 *)
+(* 调度器（F20_00启动流程）检测到 M_Show_Step_AUTO = 100 时，写 G_F20_End[9] 确认完成 *)
     900:
         G_Module_Process[9].M_Signaling_Completed := TRUE;
-        G_Module_Process[9].M_Show_Step_AUTO := 1000;
-
-(* ── Step 1000：待机，等待外部将 Step 重置为 0 ── *)
-    1000:
-        ;
+        G_Module_Process[9].M_Show_Step_AUTO := 100;
 
 END_CASE
