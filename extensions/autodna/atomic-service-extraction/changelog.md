@@ -54,3 +54,47 @@ All X/Y axis M_PT indices now confirmed. ST code corrected accordingly.
 - [ ] Gripper completion signal: does `M_Show_DrvaOK` fire on physical grip? Or is command-equals-target the intended check?
 
 <!-- Add new entries below as experiments reveal corrections -->
+
+---
+
+## 2026-04-08 — Z axis indices and gripper completion signal confirmed
+
+All remaining open questions from the previous entry are now resolved.
+The ST file has been updated accordingly; all `⚠️` markers removed.
+
+### Confirmed
+
+- **Z axis M_PT[0] = safe travel height (confirmed)**
+  Original code comment in F09 reads `// 夹持Z轴夹持位`, which maps to the
+  safe walk height / home position used before and after every move.
+  Used in Step 170 (raise after pickup) and Step 210 (raise after drop).
+
+- **Z axis M_PT[23] = metal bath drop height (confirmed)**
+  Corrected from earlier wrong assumption of `M_PT[19]`.
+  The original F09 code explicitly comments `// 搜运Z轴放料位` on `M_PT[23]`.
+  Step 190 now correctly assigns and checks `M_PT[23]` (both assignment and
+  feedback comparison use the same index — the mismatched `[19]`/`[23]` bug
+  from the previous version was also fixed here).
+
+- **Gripper completion check: command-equals-target is correct (confirmed)**
+  The original F09 LD flow uses `M_TargetLocation_DRVA = M_PT[n]` as the
+  done condition for both clamp (Step 160) and release (Step 200), consistent
+  with how all other axes are handled in this codebase.
+  No separate `M_Show_DrvaOK` check is needed for the gripper.
+
+### ST file changes in this revision
+
+- Header Z-axis index table: removed `⚠️`, updated descriptions to "already confirmed"
+- Step 160 comment: removed `⚠️`, replaced with confirmation note
+- Step 170 comment: removed `⚠️`, updated to confirmed status
+- Step 190 comment: removed `⚠️`, updated to confirmed status
+- Step 200 comment: removed `⚠️`, replaced with confirmation note
+
+### Remaining open questions
+
+- [ ] `G_Module_Process` actual MW address (depends on global memory layout after adding to GVL)
+- [ ] PLC IP address and Modbus TCP port for C++ integration testing
+- [ ] Whether `Synthesis.metal_bath1 / metal_bath2` are BOOL or INT in the actual GVL
+      (F09 uses both `=0` and `:=1` integer style; current ST uses BOOL TRUE — needs alignment)
+- [ ] Gripper optical sensor check (Problem 6 from earlier review) — intentionally
+      deferred; will add as a separate step once basic flow is validated on hardware
