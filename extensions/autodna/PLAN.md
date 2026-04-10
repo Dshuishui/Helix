@@ -49,7 +49,7 @@ ai_scientist.py
 
 ---
 
-## 迁移状态总览
+## 迁移状态总览（全部完成）
 
 | # | 组件 | 状态 | 路径 |
 |---|------|------|------|
@@ -60,8 +60,118 @@ ai_scientist.py
 | 5 | Hardware Agent | ✅ | `skills/hardware-agent/` |
 | 6 | Literature Agent | ✅ | `skills/literature-agent/` |
 | 7 | Shared Store | ✅ | `skills/shared/` |
-| 8 | Orchestrator (单 Stage ReAct) | ✅ | `skills/autodna-orchestrator/` |
-| 9 | Planner 层（复杂度判断 + Stage 拆分） | ✅ | `skills/autodna-orchestrator/scripts/` |
+| 8 | Orchestrator (ReAct + Planner 全层) | ✅ | `skills/autodna-orchestrator/` |
+
+Orchestrator scripts（对应 AutoDNA planner_plan 各函数）：
+
+| 脚本 | 对应 AutoDNA | 功能 |
+|------|-------------|------|
+| `summarize_task.py` | `summarize_task()` | 生成实验简称 |
+| `judge_complexity.py` | `judge_task_complexity()` | simple / complex |
+| `detect_experiment_type.py` | `choose_system_prompt()` + `choose_toolset()` | 输出 storage_write / storage_read / storage / rpa / default |
+| `decompose_stages.py` | `plan_system_prompt` + LLM | 拆分 Stage JSON |
+| `judge_relevant_stages.py` | `judge_relevant_stages()` | 历史 Stage 上下文选择 |
+| `judge_requirement_relevance.py` | `judge_requirement_relevance()` | 跨 Stage requirement 继承 |
+| `complete_routine.py` | `complete_routine()` | DNA Storage Write 协议汇总 |
+| `judge_success.py` | `judge_experiment_success()` + `analyze_failure_and_get_retry_stage()` | 整体成功判断 + 重试分析 |
+
+---
+
+## 与 AutoDNA AI 层行为的差距（全部关闭）
+
+| 差距 | 状态 |
+|------|------|
+| 完整 user prompt 传给各 Skill | ✅ |
+| ReAct 动态工具调用顺序（planner） | ✅ |
+| file_id 传参（对应 shelve 数据库） | ✅ |
+| Code Agent 仪器兼容性预检查 | ✅ |
+| Code 自动纠错循环（corrector mock） | ✅ |
+| Hardware 自动执行 + 读取 protocol_flow.json | ✅ |
+| 任务复杂度判断（simple/complex） | ✅ |
+| 复杂任务 Stage 拆分（planner_plan） | ✅ |
+| Stage 间历史上下文传递 | ✅ |
+| Stage 间 requirement 继承 | ✅ |
+| 整体成功判断 + Stage 级重试 | ✅ |
+| 实验类型检测 + system prompt 分类 | ✅ |
+| Toolset 按实验类型过滤（RPA） | ✅ |
+| 多 Stage 协议汇总（DNA Storage Write） | ✅ |
+| WebSocket → C++ Scheduler | ⏸ 真实硬件时再做 |
+
+---
+
+## 下一步：理论对比分析 + 端到端验证（最高优先级）
+
+### 任务 A（理论分析，下一个 session 优先做）
+
+**目标**：从代码层面逐步对比，从"接收用户需求"到"输出 protocol_flow.json"，
+验证 OpenClaw 龙虾的执行流程和逻辑是否与 AutoDNA 一致。
+
+**分析方式**：不需要实际运行，只需对照代码逻辑，逐层比较：
+
+| 层次 | AutoDNA | OpenClaw | 是否一致 |
+|------|---------|---------|---------|
+| 入口 | `ai_scientist.py main()` → `main_routine()` | 飞书消息 → autodna-orchestrator SKILL.md | 待分析 |
+| 任务分析 | `planner_plan()` Phase 0 | Phase 0 脚本（summarize/complexity/type/decompose） | 待分析 |
+| ReAct 循环 | `planner()` → LangGraph agent↔tools 循环 | Orchestrator Phase 1 LLM 自由编排 | 待分析 |
+| Protocol 生成 | `Protocol` LangChain tool | protocol-agent SKILL.md | 待分析 |
+| Reagent 检查 | `Reagent` LangChain tool | reagent-agent SKILL.md | 待分析 |
+| Code 生成 | `Code` LangChain tool | code-agent SKILL.md | 待分析 |
+| Hardware 执行 | `Hardware` LangChain tool → `execute_code_to_scheduler()` | hardware-agent → run_experiment.py | 待分析 |
+| 脚本纠错 | corrector mock + LLM 修正 | run_experiment.py Phase 1 | 待分析 |
+| 调度执行 | scheduler.py → protocol_flow.json | run_experiment.py Phase 2 → protocol_flow.json | 待分析 |
+
+**分析时需要读的关键文件**：
+- AutoDNA: `scientist/agents/Protocol.py`, `agents/Code.py`, `agents/Hardware.py`
+- AutoDNA: `executor/scheduler/scheduler.py`（protocol_flow.json 生成逻辑）
+- 我们: `skills/*/SKILL.md`（各 Agent 的行为描述）
+- 我们: `skills/hardware-agent/scripts/run_experiment.py`
+
+### 任务 B（端到端运行对比，需要用户跑）
+
+**前置条件**（已就绪）：
+- autodna conda 环境：langchain/langgraph 已安装 ✅
+- OpenClaw gateway：已安装所有 Skills ✅
+- 需要 GEMINI_API_KEY
+
+**Step 1：运行 AutoDNA baseline**
+
+```bash
+cd ~/Documents/Github/AutoDNA/AutoDNA-python/scientist
+conda activate autodna
+
+# RPA 实验（simple 路径，建议先跑）
+GEMINI_API_KEY=你的key python ai_scientist.py --rpa --mock_mode
+
+# mock 模式遇到荧光读数暂停 → 直接按 Enter 或输入 -1 跳过
+```
+
+输出位置：`executor/scheduler/protocol_flow.json`，以及 `output/stage-N/` 各步骤 JSON。
+
+**Step 2：运行 OpenClaw**
+
+把 `prompts/user_prompt_rpa.md` 内容发给飞书机器人，触发 autodna-orchestrator 全链路。
+
+```bash
+# 确保 gateway 启动时带上 key
+GEMINI_API_KEY=你的key openclaw gateway restart
+```
+
+**Step 3：对比 protocol_flow.json**
+
+重点字段：
+- `steps[].action`：操作序列类型
+- `steps[].parameters`：容器、试剂、体积、时间参数
+- 关键仪器操作出现位置（`fluorometer_measure`、`container_allocate`）
+
+成功标准：核心操作序列大体一致，关键参数在合理范围内一致（LLM 生成允许细微差异）。
+
+### 使用的 user prompt 文件
+
+```
+../AutoDNA/AutoDNA-python/scientist/prompts/user_prompt_rpa.md      （RPA，先用这个）
+../AutoDNA/AutoDNA-python/scientist/prompts/user_prompt_full.md     （DNA 合成）
+../AutoDNA/AutoDNA-python/scientist/prompts/user_prompt_storage.md  （DNA 存储）
+```
 
 ---
 
@@ -71,33 +181,38 @@ ai_scientist.py
 用户一句话 → Orchestrator
   │
   ├─ [Phase 0] 任务分析
-  │    ├─ summarize_task.py      → experiment_name
-  │    ├─ judge_complexity.py    → simple / complex
-  │    └─ decompose_stages.py    → plan_stages.json (complex only)
+  │    ├─ summarize_task.py         → experiment_name
+  │    ├─ detect_experiment_type.py → storage_write / storage_read / storage / rpa / default
+  │    ├─ judge_complexity.py       → simple / complex
+  │    ├─ decompose_stages.py       → plan_stages.json (complex only)
+  │    └─ [storage_read only] autodna_store read write_summary → 注入初始上下文
   │
   ├─ [Phase 1] 逐 Stage 执行（simple = 1个Stage）
-  │    ├─ judge_relevant_stages.py → 哪些历史Stage输出要传入
-  │    └─ ReAct 自由编排（LLM 自主决定调用顺序）
+  │    ├─ judge_relevant_stages.py        → 哪些历史Stage输出要传入
+  │    ├─ judge_requirement_relevance.py  → 前Stage的requirement是否继承
+  │    └─ ReAct 编排（default/rpa: 自由; storage*: 严格逐步）
   │         → Protocol (INITIAL) → 存 protocol_latest
   │         → Reagent            → 存 reagent_latest
   │         → Protocol (ADJUSTMENT) → 更新 protocol_latest
   │         → Code               → 存 code_latest
   │         → Hardware           → 存 hardware_latest
-  │              Phase 1: corrector mock 纠错（最多3次，Gemini LLM 修正）
-  │              Phase 2: scheduler 运行 → protocol_flow.json
-  │         → 失败时: Hypothesis → Protocol(OPTIMIZING) → Code → Hardware（最多2次重试）
+  │              run_experiment.py Phase 1: corrector mock 纠错（最多3次）
+  │              run_experiment.py Phase 2: scheduler 运行 → protocol_flow.json
+  │         → 失败时: Hypothesis → Protocol(OPTIMIZING) → Code → Hardware（最多2次）
   │         └─ 存 stage_N_output_latest
+  │              [storage_write only] 备份 protocol_stage_N
   │
   └─ [Phase 2] 整体判断
-       ├─ judge_success.py       → success / failure + retry_stage
-       └─ 失败时从 retry_stage 重新执行（最多2次）
+       ├─ judge_success.py              → success / failure + retry_stage
+       ├─ 失败时从 retry_stage 重新执行（最多2次）
+       └─ [storage_write only] complete_routine.py → write_summary_latest
 ```
 
 ---
 
 ## 架构关键设计
 
-### 1. Skill 间 file_id 传参（对应 AutoDNA shelve 数据库）
+### Skill 间 file_id 传参
 
 ```
 每个 Skill 生成输出后：
@@ -110,69 +225,26 @@ ai_scientist.py
 ```
 
 存储目录：`~/.openclaw/workspace/autodna_store/`
+Stage 间：`stage_N_output`（如 `stage_1_output_latest.txt`）
 
-Stage 间传递使用 `stage_N_output` 作为 skill_name（如 `stage_1_output`）。
-
-### 2. Orchestrator = planner_plan + planner 合并
-
-- **Phase 0**：Python 脚本调 Gemini API，判断复杂度 + 拆分 Stage
-- **Phase 1**：LLM 自主 ReAct 循环，对应 AutoDNA `planner()` + EPA_guidance_prompt
-- **Phase 2**：Python 脚本判断整体成功，对应 AutoDNA `judge_experiment_success()`
-
-所有 Phase 0/2 的 Python 脚本在 `skills/autodna-orchestrator/scripts/`，
-全部使用 stdlib urllib 调 Gemini REST API，无外部依赖。
-
-### 3. Hardware Agent：两阶段自动执行（对应 AutoDNA mock 模式）
+### Hardware Agent 两阶段执行
 
 `skills/hardware-agent/scripts/run_experiment.py`
 
-| 阶段 | PYTHONPATH | 对应 AutoDNA | 作用 |
-|------|-----------|-------------|------|
-| Phase 1 纠错 | `executor/corrector/` | `corrector_path` | 严格 mock，检测错误 |
-| Phase 2 执行 | `executor/scheduler/` | `scheduler_path` | 生成 protocol_flow.json |
+| 阶段 | PYTHONPATH | 作用 |
+|------|-----------|------|
+| Phase 1 纠错 | `executor/corrector/` | 严格 mock，LLM 自动修正（最多3次） |
+| Phase 2 执行 | `executor/scheduler/` | 生成 protocol_flow.json |
 
-纠错循环：有 stderr → Gemini API 修正（`prompt_corrector` 模板）→ 最多3次
+### 实验类型 → 行为映射
 
-### 4. AutoDNA 架构层次说明
-
-```
-AI 层（已迁移）：  OpenClaw Skills ↔ AutoDNA Python Agents + planner_plan
-执行层（已实现）：  run_experiment.py ↔ executor/scheduler/ Python 调度器
-硬件层（待连接）：  C++ Scheduler (/AutoDNA/Scheduler/) → Modbus → PLC → 仪器
-```
-
----
-
-## 与 AutoDNA 完整行为的差距（当前状态）
-
-| # | 差距 | 状态 |
-|---|------|------|
-| 完整 user prompt 传给各 Skill | ✅ |
-| ReAct 动态工具调用顺序 | ✅ |
-| file_id 传参（非全文嵌入） | ✅ |
-| Code Agent 仪器兼容性预检查 | ✅ |
-| Code 自动纠错循环 | ✅ |
-| Hardware 自动执行 + 读取结果 | ✅ |
-| 任务复杂度判断（simple/complex） | ✅ |
-| 复杂任务 Stage 拆分（planner_plan） | ✅ |
-| Stage 间历史上下文传递 | ✅ |
-| 整体成功判断 + Stage 级重试 | ✅ |
-| 实验类型检测 + system prompt 分类（storage vs default） | ✅ |
-| Stage 间 requirement 继承（judge_requirement_relevance） | ✅ |
-| 多 Stage 协议汇总（CoflowCache + complete_routine） | ✅ |
-| Toolset 按实验类型过滤（RPA 排除 Literature/Hypothesis） | ✅ |
-| WebSocket → C++ Scheduler | ⏸ 连接真实硬件时再做 |
-
----
-
-## 待办（优先级顺序）
-
-1. **打包安装更新后的 Orchestrator**：把新增的 scripts/ 目录一起打包安装
-2. **飞书端到端测试（简单实验）**：用 RPA 或其他单 Stage 实验跑完整链路，验证 simple 路径
-3. **飞书端到端测试（复杂实验）**：用 DNA 存储/读取等多 Stage 实验，验证 Stage 拆分路径
-4. **Reagent Agent 效果对比验证**（需 Gemini API Key）
-5. **Literature Agent 飞书测试**（需 Gemini API Key 做 embedding）
-6. **C++ Scheduler 对接**（有真实硬件时）：WebSocket 模式 lab_modules，对齐 reagents.json
+| detect_experiment_type | 编排模式 | 可用 Skills | 额外行为 |
+|-----------------------|---------|------------|--------|
+| `storage_write` | 严格逐步 | 全部 | complete_routine（汇总协议） |
+| `storage_read` | 严格逐步 | 全部 | 加载 write_summary 为初始上下文 |
+| `storage` | 严格逐步 | 全部 | — |
+| `rpa` | 自由 ReAct | Protocol/Reagent/Code/Hardware | — |
+| `default` | 自由 ReAct | 全部 | — |
 
 ---
 
