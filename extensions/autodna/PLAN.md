@@ -75,15 +75,21 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 
 对应 AutoDNA `ai_scientist.py` 中的 `planner_plan()` 函数（1124 行）。
 
-**当前版本：RPA happy path**
-- Stage 1: Protocol(INITIAL) → Stage 2: Reagent → Stage 3: Protocol(ADJUSTMENT，按需) → Stage 4: Code
-- 实验失败后手动触发：Hypothesis → Protocol(OPTIMIZING) → Code
+**当前版本：完整 RPA 流程（含重试）**
+- Stage 1: Protocol(INITIAL)
+- Stage 2: Reagent 验证库存
+- Stage 3: Protocol(ADJUSTMENT)（按需）
+- Stage 4: Code 生成脚本
+- Stage 5: Hardware Agent 指导执行 + 收集结果
+- Stage 6: 成功判断
+  - 成功 → Final Output
+  - 失败 → 重试循环（最多 2 次）：Hypothesis → Protocol(OPTIMIZING) → Code → Hardware → 成功判断
 - 上下文传递：通过对话历史自动流转，无需用户 copy-paste
 
 **简化项（与原始 AutoDNA 相比）：**
 - 移除了 LangGraph ReAct 循环（用 Skill 直接调用替代）
 - 移除了 file_id + Shelve 数据库（用对话上下文替代）
-- 移除了 Hardware Agent 调用（暂缓）
+- 硬件执行改为用户手动在 AutoDNA 环境运行（WebSocket 基础设施不可迁移）
 
 ### 后续扩展计划
 
@@ -91,20 +97,45 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 - 难度：低。在 Orchestrator SKILL.md Step 1 加新分支，定义各类型的 Stage 序列
 - 不影响现有 RPA 逻辑，纯追加
 
-**添加自动重试逻辑**（对应 `planner_plan()` 的 retry loop）
-- 难度：低。在 Stage 4 之后加 "成功判断" 步骤
-- 失败时：Hypothesis → Protocol(OPTIMIZING) → Code（最多 2 次）
-- 追踪 previous hypotheses 传给 Hypothesis Agent 避免重复
-- 约 20 行追加到 SKILL.md，不需要重写
+**集成 Literature Agent**
+- 可在 Stage 1 之前加 Stage 0.5（可选），用户说"查文献"时触发
+- 已在 Orchestrator Extension roadmap 中记录
+
+---
+
+## 与 AutoDNA 的差距分析（RPA 场景对照）
+
+### AutoDNA 实际执行逻辑（RPA）
+- `judge_task_complexity()` 判断为 simple → 单阶段 ReAct 循环
+- 每个工具调用都能通过 `get_current_user_prompt()` 访问**完整原始 prompt**
+- Hardware 通过 WebSocket 自动执行脚本，荧光仪自动采集数据
+- 工具调用顺序由 LLM 自主决定
+
+### 已知差距与修复计划
+
+| # | 差距 | 严重程度 | 修复方案 | 状态 |
+|---|------|---------|---------|------|
+| 1 | **完整 user prompt 未传给各 Stage** | 高 | Orchestrator 在每个 Stage 调用时附上完整原始输入，不只传摘要 | ✅ 已修 |
+| 2 | **荧光判断逻辑（NTC×3 阈值）未传入 Code/Hardware** | 高 | 同上（随完整 prompt 一起传入解决）| ✅ 随 #1 解决 |
+| 3 | **Code Agent 未收到库存信息，容器名可能出错** | 高 | Orchestrator Stage 4 把 Reagent 输出传给 Code Agent；Code Agent 规则 5 要求使用库存中的精确名称 | ✅ 已修 |
+| 4 | **Code Agent 缺少仪器兼容性预检查** | 中 | Code Agent 新增 Step 0（pre-check），先确认步骤能映射到 lab_modules API | ✅ 已修 |
+| 5 | **Hardware 自动执行 → 手动汇报** | 高（不可避免）| 用户连接真实硬件后自然解决；测试阶段用户手动汇报 | ⏸ 硬件依赖 |
+| 6 | **ReAct 动态调用 vs 固定 Stage** | 中 | RPA 固定流程影响小；暂不修复 | ⏸ 暂缓 |
+
+### Protocol Agent 已修复项（2026-04-10）
+- INITIAL: "DO NOT prepare ANY solutions or buffers"（原文加强）
+- ADJUSTMENT: 过滤后输出新 Reagent Check List（未验证试剂）；补充 optional/中间产物规则
+- OPTIMIZING: 新增第二步验证（多 option 的 step 只保留最优）
 
 ---
 
 ## 待办（优先级顺序）
 
-1. **飞书验证 Orchestrator**：打包安装，端到端测试完整 RPA 流程
-2. **Reagent Agent 效果对比验证**（等 Gemini API Key 可用）
-3. **扩展 Orchestrator**：添加重试逻辑（见上方扩展计划）
-4. Hardware Agent / Literature Agent（暂缓）
+1. **修复 Orchestrator 完整 prompt 传递**（差距 #1/#2）
+2. **飞书端到端测试**：完整 RPA 流程（Orchestrator → 全链路）
+3. **Reagent Agent 效果对比验证**（等 Gemini API Key 可用）
+4. **Literature Agent 飞书测试**（需要 Gemini API Key 做 embedding）
+5. **扩展 Orchestrator**：支持更多实验类型（PCR 等）
 
 ---
 

@@ -35,7 +35,7 @@ Generate a comprehensive experiment procedure strictly following the output stru
 **Core rules:**
 1. You MUST NOT use any reagent not mentioned in the provided context or user input.
 2. If no reagent context is provided, use your knowledge of standard lab reagents for the experiment type.
-3. DO NOT add preparation steps for solutions or buffers — assume they are ready to use.
+3. DO NOT prepare ANY solutions or buffers. All reagents are assumed to be ready to use.
 4. For each step, list ALL chemically distinct options (different component sets, not different volumes).
 5. Options must differ in chemical composition, not just quantity or concentration.
 6. Use the primary designed function name as the component name if mentioned; otherwise use the application name or chemical name.
@@ -44,21 +44,36 @@ Generate a comprehensive experiment procedure strictly following the output stru
 ### ADJUSTMENT mode
 
 Given an existing procedure and a Reagent Availability List:
-1. For each Option, check if any required component is listed as "not available".
-2. Remove any Option that requires an unavailable reagent (unless that reagent is prepared in a preceding step).
-3. Remove any Step with no valid Options remaining.
-4. Remove any Part with no valid Steps remaining.
-5. Renumber all remaining Parts and Steps sequentially.
-6. Keep all details of valid steps unchanged.
-7. Exception: a buffer available under its functional name is considered available regardless of its individual components' availability.
+
+**Filtering rules:**
+1. Use the Reagent Availability List as the absolute source of truth.
+2. Reagents NOT in the list are considered **available for now** (assume available, check later).
+3. For each Option, if any required component is listed as "not available" AND is not prepared in a preceding step, that Option is INVALIDATED — remove it without explanation.
+4. If a reagent is marked optional, proceed without it.
+5. Remove any Step with no valid Options remaining.
+6. Remove any Part with no valid Steps remaining.
+7. Renumber all remaining Parts and Steps sequentially.
+8. Keep all details of valid steps unchanged.
+9. Exception: a buffer is considered available if listed under its functional/common name, regardless of whether its individual components are available.
+10. Exception: if the final product of any step sequence is already listed as an available starting material, eliminate all steps dedicated to its preparation.
+
+**After filtering, output a new Reagent Check List** (same format as after INITIAL) containing ONLY reagents that were NOT in the provided Reagent Availability List — i.e., those assumed available that still need future verification. If all reagents were already verified, output: "All reagents verified. No further check needed."
 
 ### OPTIMIZING mode
 
-Given an existing procedure and optimization advice:
-1. Update the procedure to incorporate the advice.
-2. If the advice specifies a numerical range, select the value with maximum effect.
+Given an existing procedure and optimization advice, this is a **two-pass process**:
+
+**Pass 1 — Update:**
+1. Modify the procedure to incorporate the optimization advice.
+2. If the advice specifies a numerical range, select the value with maximum possible effect.
 3. Maintain the Part/Step/Option hierarchy throughout.
-4. At the end, list any new reagents introduced by the optimization (see Reagent Check List section).
+4. Check if the advice introduces any new reagents or buffers not in the original procedure (including component changes or concentration adjustments of existing buffers — these count as new). If so, append a Reagent Check List for those new items only.
+
+**Pass 2 — Validate and trim:**
+After updating, review each Step:
+- If multiple options remain valid in a step, keep ONLY the single best option (the one most aligned with the optimization goal).
+- Do not modify validated options — keep them exactly as written.
+- The final output must have at most one Option per Step.
 
 ## Output Structure
 
