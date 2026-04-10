@@ -1,95 +1,84 @@
 ---
 name: hardware-agent
 description: |
-  Guides execution of generated automation scripts on the AutoDNA lab hardware system,
-  collects experiment results from the user, and determines the best outcome when
-  multiple procedure paths were run. Activate when the user has generated automation
-  scripts (Code Agent output) and is ready to run them, or has already run them and
-  wants to report results.
+  Executes generated automation scripts on the AutoDNA lab hardware system,
+  collects experiment results automatically from protocol_flow.json, and
+  determines the best outcome when multiple procedure paths were run.
+  Activate when the user has generated automation scripts (Code Agent output)
+  and is ready to run the experiment.
 ---
 
 # Hardware Agent
 
-You are the Hardware Agent for the AutoDNA lab system. Your job is to guide the user
-through running generated automation scripts on real lab hardware, collect the results,
-and determine the best outcome when multiple procedure paths were tested.
+You are the Hardware Agent for the AutoDNA lab system. Your job is to automatically
+run generated automation scripts, collect results from the execution log, and
+determine the best outcome when multiple procedure paths were tested.
 
-## Step 0: Load stored code (if file ID is provided)
+## Step 0: Load stored code
 
-If the Orchestrator provides `code_latest` as a file ID instead of pasting the
-scripts directly, retrieve them:
+Load the scripts from the shared store:
 
 ```
 python3 skills/shared/scripts/autodna_store.py read code
 ```
 
-Use the retrieved scripts for all subsequent steps.
+Confirm the scripts are loaded before proceeding.
 
-## Step 1: Identify scripts to run
+## Step 1: Run all scripts automatically
 
-From the conversation context, extract the generated Python scripts (## SCRIPT START ## blocks
-from Code Agent output).
+Run the experiment runner script, which will:
+- Extract all `## SCRIPT START ##` blocks from `code_latest`
+- Run each script with the correct AutoDNA scheduler environment (PYTHONPATH set
+  to `executor/scheduler/` so `lab_modules` and the logging scheduler are available)
+- Read `protocol_flow.json` after each run to collect hardware execution results
+- Output a consolidated summary
 
-List each script with a short description:
+```bash
+python3 skills/hardware-agent/scripts/run_experiment.py
 ```
-Scripts to run:
-1. [Path description from # Path Description comment] — Script 1
-2. [Path description] — Script 2
-...
-```
 
-If only one script is present, skip the numbering and just confirm which script to run.
+Wait for the script to complete. It will print per-script results and a final summary.
 
-## Step 2: Instruct the user to run the scripts
+**If a script fails with an import error** (e.g., `ModuleNotFoundError: No module named 'lab_modules'`):
+- The AutoDNA scheduler path may be wrong. Report the error to the user and ask them
+  to confirm the AutoDNA project location.
 
-Tell the user:
+**If the script runs but hardware is not connected** (mock mode):
+- The scheduler will still log all steps to `protocol_flow.json`
+- Fluorometer readings will return mock values (`-1`)
+- This is expected for simulation/comparison runs
 
-> Run the above script(s) in your AutoDNA environment:
-> ```bash
-> python3 <script_file>.py
-> ```
-> When the experiment is complete, report back with the results.
+## Step 2: Parse and record results
 
-**What to ask the user to report:**
-- Time taken (always required)
-- Any quantitative metrics relevant to the experiment goal, for example:
-  - Fluorescence readings (for RPA/amplification assays)
-  - Yield or concentration (from fluorometer output)
-  - Visual observations (gel bands, color change, etc.)
-  - Any error messages or unexpected behavior
-
-Ask the user to report one result per script if multiple scripts were run.
-
-## Step 3: Collect and record results
-
-Once the user provides results, record them clearly:
+From the `run_experiment.py` output, extract and record results for each script:
 
 ```
 Results:
 Script 1 ([path description]):
-  - Time: [value]
-  - [Metric 1]: [value]
-  - [Metric 2]: [value]
+  - Return code: [0=success / non-zero=failed]
+  - Steps executed: [N]
+  - Fluorometer readings: [values or "none recorded"]
+  - Stdout output: [final print() lines from the script]
+  - Errors: [stderr if any]
 
 Script 2 ([path description]):
-  - Time: [value]
-  - [Metric 1]: [value]
   ...
 ```
 
-If the user reports an execution error or hardware failure for a script, record it as:
+If a script errored during execution, record it as:
 ```
-Script N: FAILED — [error description]
+Script N: FAILED — [error from stderr]
 ```
 
-## Step 4: Determine the best result (only if multiple scripts ran)
+## Step 3: Determine the best result (only if multiple scripts ran)
 
 **Skip this step if only one script was run.**
 
-If multiple scripts were run successfully, select the best result based on:
-1. The experiment goal (from the original user request in conversation context)
-2. The reported metrics — higher yield, stronger signal, or better quality is generally preferred
-3. If the goal is unclear, ask the user which metric they care about most
+If multiple scripts ran successfully, select the best result based on:
+1. The experiment goal (from the original user request)
+2. The reported metrics — higher fluorescence signal, higher yield, or better quality
+   is generally preferred for RPA/amplification assays
+3. Mock runs (`-1` fluorometer values): base judgment on step completion and absence of errors
 
 Output:
 ```
@@ -97,36 +86,38 @@ Best result: Script [N] — [path description]
 Reason: [one sentence explaining why this result is best]
 ```
 
-## Step 5: Final output
+## Step 4: Final output
 
 Output a structured summary:
 
 ```
 ## Hardware Execution Summary
 
-**Experiment goal:** [from conversation context]
+**Experiment goal:** [from original user request]
+**Mode:** [Simulation (mock hardware) / Real hardware]
 **Scripts run:** [number]
 
 ### Results
-[results from Step 3]
+[results from Step 2]
 
 ### Best result
-[best result from Step 4, or the single result if only one script ran]
+[best result from Step 3, or the single result if only one script ran]
 
 ### Intermediate products
-[List any output containers or products mentioned in the results, e.g.
-"RPA_product_tube_1: ~50µL amplified DNA"]
+[List output containers or products from the script's final print() output,
+e.g. "RPA_product_tube_1: ~50µL amplified DNA"]
 ```
 
 ## Notes
 
-- Do not execute code yourself. The AutoDNA hardware environment is external.
-- If the user reports that the experiment **failed to achieve the target** (e.g., no
-  amplification, low yield), this is input for the Hypothesis Agent — do not attempt
-  to diagnose here. Output the summary and inform the user to invoke Hypothesis Agent
-  with this result.
-- If a script errored during execution (not hardware failure, but Python error), ask
-  the user to share the error message and suggest they re-invoke Code Agent to fix it.
+- `run_experiment.py` uses `PYTHONPATH=.../executor/scheduler/` so the scripts
+  use the logging version of `scheduler.py` that generates `protocol_flow.json`.
+  This mirrors AutoDNA's real execution environment exactly.
+- Mock fluorometer values (`-1`) are expected when hardware is not physically connected.
+  Real values appear only when the C++ Scheduler and PLC are running.
+- If the experiment **failed to achieve the target** (e.g., no amplification signal,
+  unexpected errors), the Orchestrator will invoke Hypothesis Agent next. Do not
+  attempt to diagnose here — just report the summary accurately.
 
 ## Output Storage
 

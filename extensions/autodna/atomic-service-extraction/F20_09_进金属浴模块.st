@@ -25,6 +25,9 @@
      G_HC_keep_jaw[搬运夹爪].M_PT[3]  夹持位（闭合）
    ============================================================== *)
 
+(* 上升沿检测必须放在 CASE 外并每个扫描周期都执行，这样步号从 110 切到 115 的下一扫才会形成一次有效脉冲，供 Step 115 内部用 PLS_0.xOut 触发 X/Y 轴动作 *)
+PLS_0(xExecute:= G_Module_Process[9].M_Show_Step_AUTO = 115);
+
 CASE G_Module_Process[9].M_Show_Step_AUTO OF
 
 (* ── Step 0：初始化 / 空闲 ── *)
@@ -38,10 +41,11 @@ CASE G_Module_Process[9].M_Show_Step_AUTO OF
 (* ── Step 101：入口条件检查 ── *)
 (* 外部调度器写入 Sample_Num 后，将 Step 置为 101 触发本模块 *)
     101:
-        IF G_MasterControl.IN_Trigger_EStop THEN
+        IF NOT G_MasterControl.IN_Trigger_EStop THEN
             G_Module_Process[9].M_Show_Step_AUTO := 0;
         ELSIF NOT G_Module_Process[9].M_Trigger_Pause THEN
             IF G_P_F20_09_Input.Sample_Num = 1 THEN
+				Synthesis.station_plate1 := G_Sensor[13].Input;
                 IF Synthesis.station_plate1      (* 样品1工位有载具 *)
                     AND NOT Synthesis.metal_bath1     (* 金属浴1槽空位 *)
                     AND Synthesis.Handing_types = 0 THEN  (* 搬运夹爪空载 *)
@@ -77,13 +81,22 @@ CASE G_Module_Process[9].M_Show_Step_AUTO OF
 (* 防碰撞过渡位：无论从哪里来，先走到 M_PT[15] 倾斜工位再去样品位 *)
 (* 注：夹爪此处提前张开到释放位 M_PT[2]，为后续取料做准备 *)
     115:
-        G_Servo[搬运X轴].M_TargetLocation_DRVA := G_Servo_Function[搬运X轴].M_PT[15]; (* 倾斜工位 *)
+//         R_TRIG_0(CLK:= G_Module_Process[9].M_Show_Step_AUTO = 115);
+		
+		G_Servo[搬运X轴].M_TargetLocation_DRVA := G_Servo_Function[搬运X轴].M_PT[15]; (* 倾斜工位 *)
         G_Servo[搬运Y轴].M_TargetLocation_DRVA := G_Servo_Function[搬运Y轴].M_PT[15]; (* 倾斜工位 *)
         G_HC_Notkeep_jaw[搬运夹爪].M_TargetLocation_DRVA := G_HC_keep_jaw[搬运夹爪].M_PT[2]; (* 张开位 *)
         IF G_Servo[搬运X轴].M_TargetLocation_DRVA_Feedback = G_Servo_Function[搬运X轴].M_PT[15]
             AND G_Servo[搬运Y轴].M_TargetLocation_DRVA_Feedback = G_Servo_Function[搬运Y轴].M_PT[15]
             AND G_HC_Notkeep_jaw[搬运夹爪].M_TargetLocation_DRVA = G_HC_keep_jaw[搬运夹爪].M_PT[2] THEN
-            G_Module_Process[9].M_Show_Step_AUTO := 117;
+			IF PLS_0.xOut THEN
+				G_Servo[搬运Y轴].M_Trigger_DRVA := TRUE;
+				G_Servo[搬运X轴].M_Trigger_DRVA := TRUE;
+			END_IF
+			
+			IF G_Servo[搬运X轴].M_Show_DrvaOK AND G_Servo[搬运Y轴].M_Show_DrvaOK THEN
+				G_Module_Process[9].M_Show_Step_AUTO := 117;
+			END_IF
         END_IF
 
 (* ── Step 117：再次清除 X/Y 轴触发标志，准备定位样品位 ── *)
