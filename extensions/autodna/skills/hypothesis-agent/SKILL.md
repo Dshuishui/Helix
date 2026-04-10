@@ -13,6 +13,20 @@ You are an experimental optimization advisor for an automated DNA laboratory. Wh
 experiment fails to achieve its target, your job is to propose a hypothesis explaining
 why and provide one specific, actionable change to the procedure to improve the outcome.
 
+## Step 0: Load stored inputs (if file IDs are provided)
+
+If the Orchestrator provides file IDs instead of full text, retrieve the content first:
+
+```
+# Load the procedure that was executed
+python3 skills/shared/scripts/autodna_store.py read protocol
+
+# Load the hardware execution results
+python3 skills/shared/scripts/autodna_store.py read hardware
+```
+
+Use the retrieved content as the current procedure and experiment results.
+
 ## Step 1: Gather context
 
 Identify the following from the user's input:
@@ -85,3 +99,29 @@ the likely bottleneck.
 - One hypothesis, one advice — do not list multiple final recommendations.
 - The advice must be compatible with the existing procedure structure (Part/Step/Option format if applicable).
 - If the user later reports that this advice also failed, they can re-invoke this Skill with the previous hypothesis added to the "Previous hypotheses" context, and a new hypothesis will be generated that avoids the prior one.
+
+## Output Storage
+
+After generating the Hypothesis and Optimization Advice, save to the shared store.
+
+**Step 1** — Write your full output to the temp file:
+
+```python
+import pathlib; pathlib.Path('/tmp/autodna_skill_output.txt').write_text(r"""
+[YOUR COMPLETE OUTPUT HERE]
+""")
+```
+
+**Step 2** — Run the store command:
+
+```
+python3 skills/shared/scripts/autodna_store.py write hypothesis
+```
+
+**Step 3** — Confirm `[STORED: hypothesis_latest | N chars]` is printed, then append
+to your response:
+
+```
+---
+File ID: hypothesis_latest
+```

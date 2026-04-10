@@ -77,3 +77,29 @@ Output only the formatted lines. Do not add explanations or extra text.
 - Match reagent names case-insensitively, including aliases from the inventory
 - If a reagent has `documentation`, include the manual name in the output line
 - If a reagent has `notes`, append them to the output line
+
+## Output Storage
+
+After generating your complete availability check output, save it to the shared store.
+
+**Step 1** — Write your full output to the temp file:
+
+```python
+import pathlib; pathlib.Path('/tmp/autodna_skill_output.txt').write_text(r"""
+[YOUR COMPLETE OUTPUT HERE]
+""")
+```
+
+**Step 2** — Run the store command:
+
+```
+python3 skills/shared/scripts/autodna_store.py write reagent
+```
+
+**Step 3** — Confirm `[STORED: reagent_latest | N chars]` is printed, then append
+to your response:
+
+```
+---
+File ID: reagent_latest
+```

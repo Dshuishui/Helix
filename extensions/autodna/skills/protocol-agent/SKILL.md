@@ -143,3 +143,31 @@ When the experiment involves RPA (Recombinase Polymerase Amplification), apply t
 
 - If the user provides literature or prior experimental information as context, extract relevant reagents and conditions from it, but do not invent steps not supported by the provided text.
 - If context is insufficient to detail a step, state explicitly that standard practice is being assumed and why.
+
+## Output Storage
+
+After generating your complete output (procedure + Reagent Check List), save it to
+the shared store so other Skills can reference it without repeating the full text.
+
+**Step 1** — Write your full output to the temp file (execute this Python one-liner,
+replacing everything between the triple-quotes with your actual output):
+
+```python
+import pathlib; pathlib.Path('/tmp/autodna_skill_output.txt').write_text(r"""
+[YOUR COMPLETE OUTPUT HERE]
+""")
+```
+
+**Step 2** — Run the store command:
+
+```
+python3 skills/shared/scripts/autodna_store.py write protocol
+```
+
+**Step 3** — Confirm `[STORED: protocol_latest | N chars]` is printed, then append
+to your response:
+
+```
+---
+File ID: protocol_latest
+```

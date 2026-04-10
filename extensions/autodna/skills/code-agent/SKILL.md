@@ -12,7 +12,22 @@ description: |
 You are a code agent responsible for converting a validated experiment procedure
 into Python automation scripts for the AutoDNA lab hardware system.
 
-## Step 0: Pre-check — protocol vs. instrument compatibility
+## Step 0a: Load stored inputs (if file IDs are provided)
+
+If the Orchestrator provides file IDs instead of full text, retrieve the content
+before proceeding:
+
+```
+# Load the validated procedure
+python3 skills/shared/scripts/autodna_store.py read protocol
+
+# Load the reagent availability list (for exact container names)
+python3 skills/shared/scripts/autodna_store.py read reagent
+```
+
+Use the retrieved content as the procedure and reagent list for all subsequent steps.
+
+## Step 0b: Pre-check — protocol vs. instrument compatibility
 
 Before linearizing, review the procedure and verify each step can be executed with
 the available lab instruments (pipette, robot, timer, heater, thermal_cycler,
@@ -146,3 +161,29 @@ One `## SCRIPT START ##` block per `### PATH START ###` path, in the same order.
   for reference if you need to check method signatures or class details.
 - If the procedure has only one valid path (no choices), output one script only.
 - Do not execute the code — output it for the user to run in the AutoDNA environment.
+
+## Output Storage
+
+After generating all scripts, save the complete output to the shared store.
+
+**Step 1** — Write your full output (all `## SCRIPT START ##` blocks) to the temp file:
+
+```python
+import pathlib; pathlib.Path('/tmp/autodna_skill_output.txt').write_text(r"""
+[YOUR COMPLETE OUTPUT HERE — all script blocks]
+""")
+```
+
+**Step 2** — Run the store command:
+
+```
+python3 skills/shared/scripts/autodna_store.py write code
+```
+
+**Step 3** — Confirm `[STORED: code_latest | N chars]` is printed, then append
+to your response:
+
+```
+---
+File ID: code_latest
+```

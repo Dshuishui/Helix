@@ -81,3 +81,30 @@ If the query fails with a paper-qa error, report the error to the user.
   `/Users/cong/Documents/Github/AutoDNA/AutoDNA-python/scientist/papers/`
 - The conda environment `autodna` must have paper-qa installed.
   Setup: `SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 /opt/anaconda3/envs/autodna/bin/pip install -e /Users/cong/Documents/Github/AutoDNA/AutoDNA-python/Lib/paper-qa`
+
+## Output Storage (optional)
+
+If the Orchestrator will pass this output to another Skill (e.g., Protocol Agent),
+save it to the shared store.
+
+**Step 1** — Write your full output to the temp file:
+
+```python
+import pathlib; pathlib.Path('/tmp/autodna_skill_output.txt').write_text(r"""
+[YOUR COMPLETE LITERATURE SEARCH RESULTS HERE]
+""")
+```
+
+**Step 2** — Run the store command:
+
+```
+python3 skills/shared/scripts/autodna_store.py write literature
+```
+
+**Step 3** — Confirm `[STORED: literature_latest | N chars]` is printed, then append
+to your response:
+
+```
+---
+File ID: literature_latest
+```

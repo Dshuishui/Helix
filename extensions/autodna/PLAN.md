@@ -73,33 +73,32 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 
 ## Orchestrator 迁移完成记录
 
-对应 AutoDNA `ai_scientist.py` 中的 `planner_plan()` 函数（1124 行）。
+对应 AutoDNA `ai_scientist.py` 中的 `planner_plan()` + EPA_guidance_prompt 逻辑。
 
-**当前版本：完整 RPA 流程（含重试）**
-- Stage 1: Protocol(INITIAL)
-- Stage 2: Reagent 验证库存
-- Stage 3: Protocol(ADJUSTMENT)（按需）
-- Stage 4: Code 生成脚本
-- Stage 5: Hardware Agent 指导执行 + 收集结果
-- Stage 6: 成功判断
-  - 成功 → Final Output
-  - 失败 → 重试循环（最多 2 次）：Hypothesis → Protocol(OPTIMIZING) → Code → Hardware → 成功判断
-- 上下文传递：通过对话历史自动流转，无需用户 copy-paste
+**当前版本：ReAct 风格自由编排（2026-04-09 重构）**
 
-**简化项（与原始 AutoDNA 相比）：**
-- 移除了 LangGraph ReAct 循环（用 Skill 直接调用替代）
-- 移除了 file_id + Shelve 数据库（用对话上下文替代）
-- 硬件执行改为用户手动在 AutoDNA 环境运行（WebSocket 基础设施不可迁移）
+架构与 AutoDNA 对齐：
+- AutoDNA 本质是 LangGraph ReAct 循环，6 个 `@tool` 函数，LLM 自主决定调用顺序
+- 我们的 Orchestrator 等价实现：LLM 自由决定调用哪些 Skill、顺序如何
+- 不再有固定 Stage 序列，适用于任何实验类型（RPA、PCR、NGS 等）
+
+核心机制：
+- **完整原始 prompt 传递**：每次 Skill 调用必须附带用户完整原始请求（verbatim）
+- **上下文透传**：前序 Skill 的输出直接嵌入下次调用（等价于 AutoDNA file_id 传参）
+- **先推理再行动**：每次 Skill 调用前解释原因（对应 AutoDNA EPA_guidance_prompt）
+- **失败重试**：最多 2 次；每次 Hypothesis Agent 收到历史假设列表避免重复
+- **停止信号**：`### workflow ### / ### final_result ###`（与 AutoDNA 完全一致）
+
+简化项（与原始 AutoDNA 相比）：
+- file_id + Shelve DB → 对话上下文（功能等价）
+- WebSocket 硬件自动执行 → 用户手动在 AutoDNA 环境运行（硬件基础设施不可迁移）
+- LangGraph 状态机 → 对话回合（无 checkpoint/resume 需求）
 
 ### 后续扩展计划
 
-**扩展到其他实验类型（PCR、NGS 等）**
-- 难度：低。在 Orchestrator SKILL.md Step 1 加新分支，定义各类型的 Stage 序列
-- 不影响现有 RPA 逻辑，纯追加
-
-**集成 Literature Agent**
-- 可在 Stage 1 之前加 Stage 0.5（可选），用户说"查文献"时触发
-- 已在 Orchestrator Extension roadmap 中记录
+**Literature Agent 集成**
+- Orchestrator 已在 Available Skills 表中列出 Literature Agent
+- LLM 自主决定何时查文献（用户说"查文献"或流程需要时）
 
 ---
 
@@ -120,22 +119,35 @@ AutoDNA（`../AutoDNA/AutoDNA-python/`）是一个基于 LangChain/LangGraph 手
 | 3 | **Code Agent 未收到库存信息，容器名可能出错** | 高 | Orchestrator Stage 4 把 Reagent 输出传给 Code Agent；Code Agent 规则 5 要求使用库存中的精确名称 | ✅ 已修 |
 | 4 | **Code Agent 缺少仪器兼容性预检查** | 中 | Code Agent 新增 Step 0（pre-check），先确认步骤能映射到 lab_modules API | ✅ 已修 |
 | 5 | **Hardware 自动执行 → 手动汇报** | 高（不可避免）| 用户连接真实硬件后自然解决；测试阶段用户手动汇报 | ⏸ 硬件依赖 |
-| 6 | **ReAct 动态调用 vs 固定 Stage** | 中 | RPA 固定流程影响小；暂不修复 | ⏸ 暂缓 |
+| 6 | **ReAct 动态调用 vs 固定 Stage** | 中 | Orchestrator 重构为 ReAct 风格，LLM 自由决定 Skill 调用顺序 | ✅ 已修（2026-04-09）|
 
-### Protocol Agent 已修复项（2026-04-10）
+### Protocol Agent 已修复项（2026-04-09）
 - INITIAL: "DO NOT prepare ANY solutions or buffers"（原文加强）
 - ADJUSTMENT: 过滤后输出新 Reagent Check List（未验证试剂）；补充 optional/中间产物规则
 - OPTIMIZING: 新增第二步验证（多 option 的 step 只保留最优）
+
+### Orchestrator 已修复项（2026-04-09）
+- 架构从固定 6-Stage 重构为 ReAct 风格自由编排，与 AutoDNA LangGraph 对齐
+- 每次 Skill 调用必须附带完整原始用户请求（verbatim）
+- 停止格式与 AutoDNA EPA_guidance_prompt 完全一致
+
+### Skill 间 file_id 传参已实现（2026-04-10）
+
+对应 AutoDNA 的 shelve 数据库 + file_id 传参机制。
+
+- 新增 `skills/shared/scripts/autodna_store.py`：`write <skill>` / `read <skill>`
+- 存储目录：`~/.openclaw/workspace/autodna_store/`
+- 每个 Skill 输出后：① 一行 Python 写临时文件 → ② 调用 store.py write → ③ 返回 `File ID: xxx_latest`
+- Orchestrator 传 file_id 而不是全文；接收方 Skill 的 Step 0 调用 store.py read
+- 受影响 Skills：Protocol(写)、Reagent(写)、Code(读写)、Hardware(读写)、Hypothesis(读写)、Literature(写)
 
 ---
 
 ## 待办（优先级顺序）
 
-1. **修复 Orchestrator 完整 prompt 传递**（差距 #1/#2）
-2. **飞书端到端测试**：完整 RPA 流程（Orchestrator → 全链路）
-3. **Reagent Agent 效果对比验证**（等 Gemini API Key 可用）
-4. **Literature Agent 飞书测试**（需要 Gemini API Key 做 embedding）
-5. **扩展 Orchestrator**：支持更多实验类型（PCR 等）
+1. **飞书端到端测试**：完整 RPA 流程（Orchestrator → 全链路）
+2. **Reagent Agent 效果对比验证**（等 Gemini API Key 可用）
+3. **Literature Agent 飞书测试**（需要 Gemini API Key 做 embedding）
 
 ---
 
