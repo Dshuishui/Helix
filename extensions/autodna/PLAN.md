@@ -240,8 +240,8 @@ Stage 间：`stage_N_output`（如 `stage_1_output_latest.txt`）
 
 | detect_experiment_type | 编排模式 | 可用 Skills | 额外行为 |
 |-----------------------|---------|------------|--------|
-| `storage_write` | 严格逐步 | 全部 | complete_routine（汇总协议） |
-| `storage_read` | 严格逐步 | 全部 | 加载 write_summary 为初始上下文 |
+| `storage_write` | 自由 ReAct | 全部 | complete_routine（汇总协议） |
+| `storage_read` | 自由 ReAct | 全部 | 加载 write_summary 为初始上下文 |
 | `storage` | 严格逐步 | 全部 | — |
 | `rpa` | 自由 ReAct | Protocol/Reagent/Code/Hardware | — |
 | `default` | 自由 ReAct | 全部 | — |

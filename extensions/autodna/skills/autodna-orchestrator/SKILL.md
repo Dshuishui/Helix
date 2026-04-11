@@ -40,14 +40,14 @@ This determines your orchestration mode, available Skills, and special handling:
 
 | Type | Orchestration mode | Available Skills | Special |
 |------|--------------------|-----------------|---------|
-| `storage_write` | Mode B (strict stage-by-stage) | All 6 | Save write_summary after all stages |
-| `storage_read` | Mode B (strict stage-by-stage) | All 6 | Load write_summary as initial context |
+| `storage_write` | Mode A (free ReAct) | All 6 | Save write_summary after all stages |
+| `storage_read` | Mode A (free ReAct) | All 6 | Load write_summary as initial context |
 | `storage` | Mode B (strict stage-by-stage) | All 6 | — |
 | `rpa` | Mode A (free ReAct) | Protocol, Reagent, Code, Hardware **only** | — |
 | `default` | Mode A (free ReAct) | All 6 | — |
 
-For all `storage_*` and `storage` types, Phase 1 uses **Mode B**.
-For `rpa` and `default`, Phase 1 uses **Mode A**.
+For `storage` type only, Phase 1 uses **Mode B**.
+For `storage_write`, `storage_read`, `rpa`, and `default`, Phase 1 uses **Mode A**.
 
 ### Step 0c: Judge complexity
 
@@ -165,7 +165,7 @@ Please focus ONLY on executing this current stage.
 Coordinate the available Skills in whatever order the situation requires.
 Reason and act step by step. You decide the order and when to stop.
 
-#### Mode B — `storage` (EPA_storage_prompt, strict stage-by-stage)
+#### Mode B — `storage` only (EPA_storage_prompt, strict stage-by-stage)
 
 You MUST decompose the stage goal into several sub-steps. Invoke one Skill at
 a time, complete it fully, then move to the next. Do NOT invoke multiple Skills

@@ -742,7 +742,7 @@
 | Stage 间上下文 | `judge_relevant_stages()` → 读 stage_history | `judge_relevant_stages.py` → 读 autodna_store | ✅ 相同 |
 | Requirement 继承 | `judge_requirement_relevance()` | `judge_requirement_relevance.py` | ✅ 相同 |
 | Stage prompt 构建 | 历史上下文 + Goal + Requirement + 原始 prompt | 同样结构（Step 1b） | ✅ 相同 |
-| Stage 内 ReAct | `planner()` LangGraph，EPA_guidance_prompt（自由）| Mode B（严格逐步）| ⚠️ **设计差异** |
+| Stage 内 ReAct | `planner()` LangGraph，EPA_guidance_prompt（自由）| Mode A（自由 ReAct）| ✅ 已对齐 |
 | Protocol 备份 | `CoflowCache` 记录 best_protocol，`stage_protocols[]` | `cp protocol_latest → protocol_stage_N_latest` | ✅ 等价 |
 | 成功判断 | `judge_experiment_success()` + 重试最多2次 | `judge_success.py` + 重试最多2次 | ✅ 相同 |
 | complete_routine | `settings.write` 时执行，读 `stage_protocols` | `storage_write` 时执行，读 `protocol_stage_N_latest` | ✅ 相同 |
@@ -751,15 +751,11 @@
 
 **差异总结（复杂任务）：**
 
-1. **Stage 内 ReAct 模式**（主要差异）：
-   - AutoDNA WRITE 实验：`EPA_guidance_prompt`（自由 ReAct），Stage 内 AI 可以以任意顺序调用工具
-   - OpenClaw storage_write：Mode B（严格逐步），Orchestrator 按顺序一个一个调用 Skill
-   - **影响**：AutoDNA 内的 AI 更灵活，可能跳过某些步骤或以不同顺序执行；OpenClaw 更规范但可能较死板
-   - **结论**：对最终 protocol_flow.json 的内容影响不大，顺序可能略有差异
+1. **Stage 内 ReAct 模式**：已对齐。storage_write 和 storage_read 均已改为 Mode A（自由 ReAct），与 AutoDNA EPA_guidance_prompt 行为一致。
 
-2. **mock 荧光读数**：AutoDNA 交互式输入，OpenClaw 读 -1（mock），不影响 protocol_flow.json 的步骤内容
+2. **mock 荧光读数**：AutoDNA 交互式输入，OpenClaw 读 -1（mock），不影响 protocol_flow.json 的步骤内容。
 
-3. **Stage 1 无硬件执行**：两边均可能出现（AI 判断序列设计阶段不需要 Hardware），行为一致
+3. **Stage 1 无硬件执行**：两边均可能出现（AI 判断序列设计阶段不需要 Hardware），行为一致。
 
 ---
 
