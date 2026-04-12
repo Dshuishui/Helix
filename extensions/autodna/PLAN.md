@@ -5,6 +5,59 @@
 
 ---
 
+## 当前状态（2026-04-11，第二次更新）
+
+### Task A（理论分析）✅ 已完成
+
+- 理论流程对比文档：`extensions/autodna/FLOW-ANALYSIS.md`
+- 修复设计差异：storage_write/read → Mode A（自由 ReAct）
+
+### Task B（端到端运行）🔄 进行中
+
+已完成 OpenClaw 3 次实际运行测试，逐步修复了以下问题：
+
+| 问题 | 状态 |
+|------|------|
+| GEMINI_API_KEY 未注入 gateway | ✅ 已修复（写入 LaunchAgent plist） |
+| autodna-orchestrator 未被触发 | ✅ 已修复（扩大 description 触发范围 + 更新 MEMORY.md） |
+| 429 限速时 Agent 手动模拟 | ✅ 已修复（SKILL.md 加 ABSOLUTE RULE STOP） |
+| Protocol(ADJUSTMENT) 步骤缺失 | ⚠️ 存在，下次关注 |
+| Code Agent 生成代码荧光仪不分批 | ✅ 已修复（code-agent SKILL.md 加容量规则） |
+| autodna_store 旧文件影响新会话 | ✅ 已记录（每次运行前清空） |
+
+**第二次运行成果**（2026-04-11 18:41）：
+- protocol_flow.json 首次成功生成
+- 265 步骤，6 次荧光测量，24 管全部准备
+- 路径：`~/Documents/Github/AutoDNA/AutoDNA-python/scientist/executor/scheduler/protocol_flow.json`
+
+**当前阻塞**：Gemini 免费 API 429 限速（当天多次测试耗尽限额），等次日重试。
+
+### 下一步
+
+**Step 1（每次运行前）**：
+```bash
+rm -f ~/.openclaw/workspace/autodna_store/*.txt
+```
+
+**Step 2**：飞书 `/new` + 发 RPA prompt，确认完整流程跑通（orchestrator→Phase0→Phase1→protocol_flow.json）
+
+**Step 3**：运行 AutoDNA baseline 对比
+```bash
+cd ~/Documents/Github/AutoDNA/AutoDNA-python/scientist
+conda activate autodna
+GEMINI_API_KEY=<key> python ai_scientist.py --rpa --mock_mode
+```
+
+**Step 4**：对比两个 protocol_flow.json 的 `steps[].action` 和 `steps[].parameters`
+
+### 环境配置（已完成，无需重做）
+
+- GEMINI_API_KEY 已写入 `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
+- MEMORY.md 已更新提示"必须通过 orchestrator 执行"
+- 所有 Skills 已安装最新版本
+
+---
+
 ## 背景与目标
 
 AutoDNA（`../AutoDNA/AutoDNA-python/`）是基于 LangChain/LangGraph 的多智能体实验室自动化系统。

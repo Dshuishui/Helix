@@ -149,13 +149,16 @@ openclaw gateway restart
 python3 /opt/homebrew/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
   extensions/autodna/skills/<skill-name> /tmp/autodna-skills
 
-# 2. 删除旧的 .skill 存档（必须先删，否则 plugins install 会报 "plugin already exists"）
+# 2. 清理残留配置条目（必须先清，否则 gateway restart 会有 stale config warning）
+openclaw config unset plugins.entries.<skill-name>
+
+# 3. 删除旧的 .skill 存档（必须先删，否则 plugins install 会报 "plugin already exists"）
 rm ~/.openclaw/extensions/<skill-name>.skill
 
-# 3. 重新安装
+# 4. 重新安装
 openclaw plugins install /tmp/autodna-skills/<skill-name>.skill
 
-# 4. 覆盖 workspace 中的旧版本
+# 5. 覆盖 workspace 中的旧版本
 cd ~/.openclaw/workspace/skills
 rm -rf <skill-name>
 unzip -o /tmp/autodna-skills/<skill-name>.skill

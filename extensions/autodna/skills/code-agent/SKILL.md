@@ -96,7 +96,7 @@ Import and use these pre-instantiated device objects directly:
 | `thermal_cycler` | `ThermoCycler200ul` | `run_protocol(protocol)`, `open_lid()`, `close_lid()` |
 | `centrifuge_1p5mL` | `Centrifuge1p5mL` | `run(speed_rpm, duration_seconds)` |
 | `centrifuge_200uL` | `Centrifuge_200ulTubes` | `run(speed_rpm, duration_seconds)` |
-| `fluorometer` | `Fluorometer200ul` | `calibrate(std1, std2, unit)`, `measure_concentration(sample_volume_ul)`, `measure_fluorescence()` |
+| `fluorometer` | `Fluorometer200ul` | `calibrate(std1, std2, unit)`, `measure_concentration(sample_volume_ul)`, `measure_fluorescence()` — **capacity: 8 tubes max per call** |
 | `mag_rack_1p5mL` | `MagRackP1500` | `separate(wait_duration_seconds)` |
 | `mag_rack_200uL` | `MagRackP200` | `separate(duration_seconds)` |
 | `sequencer` | `Sequencer` | `start_run(run_name, output_directory)`, `stop_run()` |
@@ -120,6 +120,7 @@ thermal_cycler.run_protocol(protocol)
 
 **Experiment rules:**
 1. Concentrations in the procedure are **final concentrations** in the reaction mixture. Component concentrations listed in buffers are 1X stock concentrations.
+2. **Fluorometer capacity**: `fluorometer.measure_fluorescence()` measures at most 8 tubes per call. If the experiment has more than 8 reaction tubes, you MUST move them to the fluorometer in batches of ≤8 and call `measure_fluorescence()` once per batch. Do NOT attempt to measure all tubes in a single call.
 2. Keep reaction volume consistent unless the procedure specifies otherwise.
 3. For instrument settings not explicitly specified, use the default values from the API.
 4. Follow timing, reagent names, and repeat counts exactly as written in the procedure.
