@@ -139,6 +139,22 @@ When the experiment involves RPA (Recombinase Polymerase Amplification), apply t
 2. **Readiness:** The environment is already cleaned, decontaminated and ready, so are the instruments. Necessary setups, sample preparations (including DNA extraction, quantification), and reagents are already in place. Do NOT include any such preparation steps in the procedure — start directly from the reaction assembly.
 3. **No operational details in options:** Do not include temperatures, durations, volumes, or repetition counts inside Option descriptions. List only the components. Operational parameters belong at the Step level if needed, not inside Options.
 
+   ❌ WRONG (operational details inside Option):
+   ```
+   Step 3.2: Program instrument for RPA amplification
+       Option 3.2.1: Set RPA program
+           - Temperature: 39°C
+           - Duration: 30 minutes
+           - Fluorescence interval: every 5 minutes
+   ```
+   ✅ CORRECT (components only inside Option, parameters at Step level):
+   ```
+   Step 3.2: Run RPA amplification at 39°C for 30 minutes with fluorescence readings every 5 minutes starting at time zero
+       Option 3.2.1: Use heater-shaker for isothermal amplification
+           - RPA Reagent Buffer
+           - Reaction Initiator
+   ```
+
 ## Notes
 
 - If the user provides literature or prior experimental information as context, extract relevant reagents and conditions from it, but do not invent steps not supported by the provided text.

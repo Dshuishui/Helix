@@ -208,6 +208,13 @@ marking the stage complete.
 **If `experiment_type` = `rpa`**: do NOT invoke Hypothesis Agent or Literature Agent under any circumstances.
 This mirrors AutoDNA's `choose_toolset()` which excludes these two tools for RPA experiments.
 
+**REQUIRED execution order for RPA experiments** (do NOT stop early):
+1. Protocol Agent (INITIAL) → generates procedure
+2. Reagent Agent → checks inventory
+3. Protocol Agent (ADJUSTMENT) → only if any reagent is "not available"
+4. Code Agent → generates Python scripts
+5. **Hardware Agent → MANDATORY. You MUST invoke Hardware Agent after Code Agent. Do NOT output `### stage_complete ###` before Hardware Agent has run and returned results.**
+
 #### Before every Skill invocation
 
 Explain your reasoning out loud:

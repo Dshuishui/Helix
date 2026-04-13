@@ -121,15 +121,19 @@ thermal_cycler.run_protocol(protocol)
 **Experiment rules:**
 1. Concentrations in the procedure are **final concentrations** in the reaction mixture. Component concentrations listed in buffers are 1X stock concentrations.
 2. **Fluorometer capacity**: `fluorometer.measure_fluorescence()` measures at most 8 tubes per call. If the experiment has more than 8 reaction tubes, you MUST move them to the fluorometer in batches of ≤8 and call `measure_fluorescence()` once per batch. Do NOT attempt to measure all tubes in a single call.
-2. Keep reaction volume consistent unless the procedure specifies otherwise.
-3. For instrument settings not explicitly specified, use the default values from the API.
-4. Follow timing, reagent names, and repeat counts exactly as written in the procedure.
-5. **Use exact reagent names from the inventory** when calling `container_manager.getContainerForReplenish(name, volume)`. If an inventory list is provided in the input, use those exact names (including capitalization and spacing). Do not invent or paraphrase reagent names.
+3. Keep reaction volume consistent unless the procedure specifies otherwise.
+4. For instrument settings not explicitly specified, use the default values from the API.
+5. Follow timing, reagent names, and repeat counts exactly as written in the procedure.
+6. **Use exact reagent names from the inventory** when calling `container_manager.getContainerForReplenish(name, volume)`. If an inventory list is provided in the input, use those exact names (including capitalization and spacing). Do not invent or paraphrase reagent names.
+7. **Timer interval rule**: `timer.wait(seconds)` waits for the specified duration from the moment it is called — it does NOT wait from experiment start. When implementing periodic readings (e.g., every 5 minutes), use a fixed interval: `timer.wait(interval_seconds)` in a loop. NEVER use `timer.wait(time_point * interval)` — that causes cumulative over-waiting. Example: for readings at 0, 5, 10, 15 min, the correct pattern is `timer.wait(300)` between each reading, NOT `timer.wait(t * 300)`.
 
 **Code style rules:**
 1. Start with `import lab_modules` then use device objects directly (e.g., `from lab_modules import pipette, robot, timer, ...`).
 2. Do NOT modify or subclass any `lab_modules` classes.
-3. Use `print` ONLY for final results (container labels and volumes). No debug prints.
+3. Use `print` ONLY for final results (container labels and volumes). No debug prints, no progress messages, no intermediate status. Every `print` call in the script must output a container label or volume that is part of the final result.
+
+   ❌ WRONG: `print(f"Processing batch: {batch_name}")`, `print(f"Labeled well {well}: ...")`, `print("=== DATA ANALYSIS ===")`
+   ✅ CORRECT: `print(f"{plate.label}: {TOTAL_VOLUME}µL")`
 4. Do NOT add error handling (`try/except`).
 5. Use as few comments as possible.
 6. Reagents and buffers from `container_manager.getContainerForReplenish(name, volume)`.

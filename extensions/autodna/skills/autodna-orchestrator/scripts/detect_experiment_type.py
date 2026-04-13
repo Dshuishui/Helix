@@ -44,6 +44,7 @@ User experiment description:
 
 
 def call_gemini(prompt: str) -> str:
+    import subprocess
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         print("ERROR: GEMINI_API_KEY not set.", file=sys.stderr)
@@ -51,14 +52,28 @@ def call_gemini(prompt: str) -> str:
 
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.5-flash:generateContent?key={api_key}"
+        f"gemini-2.5-pro:generateContent?key={api_key}"
     )
-    payload = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
-    req = urllib.request.Request(
-        url, data=payload, headers={"Content-Type": "application/json"}
-    )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read())
+    payload = json.dumps({"contents": [{"parts": [{"text": prompt}]}]})
+
+    proxy = (os.environ.get("https_proxy") or os.environ.get("HTTPS_PROXY") or
+             os.environ.get("http_proxy") or os.environ.get("HTTP_PROXY"))
+    cmd = ["curl", "-s", "--max-time", "60",
+           "-H", "Content-Type: application/json",
+           "-d", payload, url]
+    if proxy:
+        cmd = ["curl", "-s", "--max-time", "60",
+               "--proxy", proxy,
+               "-H", "Content-Type: application/json",
+               "-d", payload, url]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"curl failed: {result.stderr}")
+    data = json.loads(result.stdout)
+    if "error" in data:
+        err = data["error"]
+        raise urllib.error.HTTPError(url, err.get("code", 0), err.get("message", "API error"), {}, None)
     return data["candidates"][0]["content"]["parts"][0]["text"].strip().lower()
 
 

@@ -5,7 +5,7 @@
 
 ---
 
-## 当前状态（2026-04-11，第二次更新）
+## 当前状态（2026-04-12，第三次更新）
 
 ### Task A（理论分析）✅ 已完成
 
@@ -14,47 +14,74 @@
 
 ### Task B（端到端运行）🔄 进行中
 
-已完成 OpenClaw 3 次实际运行测试，逐步修复了以下问题：
+累计运行记录（test-logs/，已加入 .gitignore 不上传 GitHub）：
 
-| 问题 | 状态 |
-|------|------|
-| GEMINI_API_KEY 未注入 gateway | ✅ 已修复（写入 LaunchAgent plist） |
-| autodna-orchestrator 未被触发 | ✅ 已修复（扩大 description 触发范围 + 更新 MEMORY.md） |
-| 429 限速时 Agent 手动模拟 | ✅ 已修复（SKILL.md 加 ABSOLUTE RULE STOP） |
-| Protocol(ADJUSTMENT) 步骤缺失 | ⚠️ 存在，下次关注 |
-| Code Agent 生成代码荧光仪不分批 | ✅ 已修复（code-agent SKILL.md 加容量规则） |
-| autodna_store 旧文件影响新会话 | ✅ 已记录（每次运行前清空） |
+| 文件 | 时间 | 结果 |
+|------|------|------|
+| full-pipeline-rpa-01-orchestrator-not-triggered | 04-11 09:53 | orchestrator 未触发，手动执行 |
+| full-pipeline-rpa-02-success-265steps | 04-11 10:31 | ✅ 首次成功，265步骤，protocol_flow.json 生成 |
+| full-pipeline-rpa-03-429-agent-manual-simulate | 04-11 10:53 | 429 → Agent 违规手动模拟（bug） |
+| full-pipeline-rpa-04-429-correct-stop | 04-11 11:05 | 429 → 正确 STOP（修复后） |
+| chat-Assistant-1775979058748 | 04-12 14:52 | 404（gemini-2.0-flash 废弃） |
+| chat-Assistant-1775981127156 | 04-12 15:47 | 404 → Agent 手动模拟（SKILL.md 漏洞） |
+| chat-Assistant-1776005870534 | 04-12 22:52 | 400（urllib ProxyHandler HTTPS 缺陷） |
 
-**第二次运行成果**（2026-04-11 18:41）：
-- protocol_flow.json 首次成功生成
-- 265 步骤，6 次荧光测量，24 管全部准备
-- 路径：`~/Documents/Github/AutoDNA/AutoDNA-python/scientist/executor/scheduler/protocol_flow.json`
+累计修复问题：
 
-**当前阻塞**：Gemini 免费 API 429 限速（当天多次测试耗尽限额），等次日重试。
+| 问题 | 状态 | 修复方式 |
+|------|------|---------|
+| GEMINI_API_KEY 未注入 gateway | ✅ | 写入 LaunchAgent plist |
+| autodna-orchestrator 未被触发 | ✅ | 扩大 description 触发范围 |
+| 429/任意错误时 Agent 手动模拟 | ✅ | SKILL.md ABSOLUTE RULE 覆盖所有 HTTP 错误 |
+| gemini-2.0-flash 对新用户废弃 → 404 | ✅ | 8个脚本改为 gemini-2.5-flash |
+| urllib ProxyHandler HTTPS CONNECT 缺陷 → 400 | ✅ | 8个脚本改用 curl 子进程发请求 |
+| openclaw gateway restart 不重载 plist env → key 未更新 | ✅ | 必须用 launchctl unload + load |
+| Protocol(ADJUSTMENT) 步骤缺失 | ⚠️ | 下次关注 |
+| Code Agent 生成代码荧光仪不分批 | ✅ | code-agent SKILL.md 加容量规则 |
+| autodna_store 旧文件影响新会话 | ✅ | 每次运行前清空 |
+| API key 泄漏到 GitHub（commit 含明文 key） | ✅ | git reset + force push + test-logs 加入 .gitignore |
+| Protocol Agent 在 RPA Option 内写操作参数（违反 RPA 规则）| ⚠️ | 待加强 protocol-agent SKILL.md 示例 |
+| Code Agent timer 累加逻辑错误（wait(time_point*60) 应为 wait(300)）| ✅ | code-agent SKILL.md 加 timer 规则 |
+| Code Agent print 中间过程（违反 print only for final results）| ⚠️ | 下次关注，规则已在 SKILL.md 但 LLM 未遵守 |
+| Orchestrator 在 Code Agent 完成后未调用 Hardware Agent 就结束 | ✅ | orchestrator SKILL.md 明确 RPA 必须调 Hardware |
+
+**最新修复细节（2026-04-12）**：
+
+1. **gemini-2.0-flash → gemini-2.5-flash**：新 API key 不支持旧模型，8 个 Phase 0 脚本批量替换
+2. **urllib → curl 子进程**：Python 3.9 的 `urllib.ProxyHandler` 对 HTTPS CONNECT 隧道实现有缺陷，在 gateway LaunchAgent 子进程里不稳定走代理（HTTP 400 地理限制）。改用 `curl --proxy` 显式指定代理，完全可靠
+3. **ABSOLUTE RULE 加强**：从只覆盖 429/missing key，改为覆盖所有非零退出码和任意 HTTP 错误
+4. **key 安全**：旧 key（AIzaSyDbLfjg...）已通过 commit 暴露到 public 仓库，现已销毁；新 key 写入 plist，test-logs 加入 .gitignore
+
+**当前状态**：最新修复（curl 子进程）尚未在飞书验证，下次运行应能通过 Phase 0。
 
 ### 下一步
 
-**Step 1（每次运行前）**：
+**每次运行前**：
 ```bash
 rm -f ~/.openclaw/workspace/autodna_store/*.txt
 ```
 
-**Step 2**：飞书 `/new` + 发 RPA prompt，确认完整流程跑通（orchestrator→Phase0→Phase1→protocol_flow.json）
+**Step 1**：飞书 `/new` + 发 RPA prompt，验证 Phase 0 脚本能通过（summarize→detect→complexity）
 
-**Step 3**：运行 AutoDNA baseline 对比
+**Step 2**：确认完整流程跑通（Phase 0 → Phase 1 → protocol_flow.json 生成）
+
+**Step 3**：关注 Protocol(ADJUSTMENT) 步骤是否出现（Reagent 检查后 Protocol 应有 ADJUSTMENT）
+
+**Step 4**：运行 AutoDNA baseline 对比
 ```bash
 cd ~/Documents/Github/AutoDNA/AutoDNA-python/scientist
 conda activate autodna
 GEMINI_API_KEY=<key> python ai_scientist.py --rpa --mock_mode
 ```
 
-**Step 4**：对比两个 protocol_flow.json 的 `steps[].action` 和 `steps[].parameters`
+**Step 5**：对比两个 protocol_flow.json 的 `steps[].action` 和 `steps[].parameters`
 
-### 环境配置（已完成，无需重做）
+### 环境配置（当前状态）
 
-- GEMINI_API_KEY 已写入 `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
-- MEMORY.md 已更新提示"必须通过 orchestrator 执行"
-- 所有 Skills 已安装最新版本
+- GEMINI_API_KEY（AIzaSyCRgerPay...）已写入 `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
+- plist 中代理：`https_proxy=http://127.0.0.1:7890`（脚本现在用 curl 显式指定，不再依赖 urllib 自动读取）
+- 所有 Skills 已安装最新版本（autodna-orchestrator 含 curl 子进程版本）
+- stale config warning（plugins.entries.autodna-orchestrator）每次重启出现，无害，可忽略
 
 ---
 

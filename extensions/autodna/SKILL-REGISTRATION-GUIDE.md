@@ -142,29 +142,70 @@ openclaw gateway restart
 
 ## 更新已注册的 Skill
 
-修改源文件后，重新打包并覆盖 workspace：
+### 为什么会出现 stale config warning？
+
+`openclaw plugins install` 每次安装都会在 `openclaw.json` 的 `plugins.entries` 里写入一条注册条目。但删除 `.skill` 文件时，这条条目**不会自动清理**。下次 gateway restart 发现 config 里有条目但文件不存在，就报 stale warning。
+
+**正确的更新顺序（严格按此执行）：**
 
 ```bash
-# 1. 重新打包
+# 1. 重新打包（在 Helix repo 根目录）
 python3 /opt/homebrew/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
   extensions/autodna/skills/<skill-name> /tmp/autodna-skills
 
-# 2. 清理残留配置条目（必须先清，否则 gateway restart 会有 stale config warning）
-openclaw config unset plugins.entries.<skill-name>
-
-# 3. 删除旧的 .skill 存档（必须先删，否则 plugins install 会报 "plugin already exists"）
+# 2. 删除旧的 .skill 存档（必须先删，否则 plugins install 会报 "plugin already exists"）
 rm ~/.openclaw/extensions/<skill-name>.skill
 
-# 4. 重新安装
+# 3. 重新安装（会自动写入新的 config 条目）
 openclaw plugins install /tmp/autodna-skills/<skill-name>.skill
 
-# 5. 覆盖 workspace 中的旧版本
-cd ~/.openclaw/workspace/skills
-rm -rf <skill-name>
-unzip -o /tmp/autodna-skills/<skill-name>.skill
+# 4. 覆盖 workspace 中的旧版本
+cd ~/.openclaw/workspace/skills && unzip -o /tmp/autodna-skills/<skill-name>.skill
 ```
 
-更新后同样需要在飞书开启新会话（`/new` 或 `/reset`）才能加载最新版本。
+**注意：不需要手动 `config unset`。** 只要严格按"先删 .skill 文件，再 install"的顺序，config 条目会被正确覆盖，不会累积 stale 条目。
+
+如果之前操作混乱已经积累了 stale 条目，批量清理：
+```bash
+openclaw config unset plugins.entries.autodna-orchestrator
+openclaw config unset plugins.entries.protocol-agent
+openclaw config unset plugins.entries.code-agent
+# 然后重新按上面步骤安装
+```
+
+### 批量更新多个 Skill
+
+```bash
+# 1. 打包所有需要更新的 skill
+for skill in autodna-orchestrator protocol-agent code-agent; do
+  python3 /opt/homebrew/lib/node_modules/openclaw/skills/skill-creator/scripts/package_skill.py \
+    extensions/autodna/skills/$skill /tmp/autodna-skills
+done
+
+# 2. 删除旧 .skill 文件
+rm ~/.openclaw/extensions/autodna-orchestrator.skill \
+   ~/.openclaw/extensions/protocol-agent.skill \
+   ~/.openclaw/extensions/code-agent.skill
+
+# 3. 重新安装
+for skill in autodna-orchestrator protocol-agent code-agent; do
+  openclaw plugins install /tmp/autodna-skills/$skill.skill
+done
+
+# 4. 更新 workspace
+cd ~/.openclaw/workspace/skills
+for skill in autodna-orchestrator protocol-agent code-agent; do
+  unzip -o /tmp/autodna-skills/$skill.skill
+done
+```
+
+### 重启 gateway
+
+```bash
+openclaw gateway restart
+```
+
+更新后必须在 TUI 或飞书开启新会话（`/new` 或 `/reset`）才能加载最新版本。
 
 ---
 
@@ -172,12 +213,13 @@ unzip -o /tmp/autodna-skills/<skill-name>.skill
 
 | Skill | 状态 | 对应 AutoDNA Agent |
 |-------|------|-------------------|
+| `autodna-orchestrator` | ✅ ready | `planner_plan()` + `planner()` |
+| `protocol-agent` | ✅ ready | `agents/Protocol.py` |
+| `code-agent` | ✅ ready | `agents/Code.py` |
 | `reagent-agent` | ✅ ready | `agents/Reagent.py` |
-| `literature-agent` | 待迁移 | `agents/Literature.py` |
-| `protocol-agent` | 待迁移 | `agents/Protocol.py` |
-| `code-agent` | 待迁移 | `agents/Code.py` |
-| `hardware-agent` | 待迁移 | `agents/Hardware.py` |
-| `hypothesis-agent` | 待迁移 | `agents/Hypothesis.py` |
+| `hardware-agent` | ✅ ready | `agents/Hardware.py` |
+| `hypothesis-agent` | ✅ ready | `agents/Hypothesis.py` |
+| `literature-agent` | ✅ ready | `agents/Literature.py` |
 
 ---
 
@@ -192,8 +234,11 @@ unzip -o /tmp/autodna-skills/<skill-name>.skill
 **Q: 打包时提示 stale config entry？**  
 运行 `openclaw config unset plugins.entries.<skill-name>` 清理遗留配置。建议每次安装前都提前执行。
 
-**Q: Skill 已注册但飞书里触发不了？**  
-必须在飞书发送 `/new` 或 `/reset` 开启新会话，旧会话不会自动加载新注册的 Skill。
+**Q: Skill 已注册但飞书/TUI 里触发不了？**  
+必须发送 `/new` 或 `/reset` 开启新会话，旧会话不会自动加载新注册的 Skill。TUI 中可直接 Ctrl+C 退出后重新进入。
+
+**Q: gateway restart 还是有 stale config warning？**  
+说明之前的安装操作留下了 config 条目但 .skill 文件已不存在。手动清理：`openclaw config unset plugins.entries.<skill-name>`，然后按"更新已注册的 Skill"标准流程重新安装。
 
 **Q: 运行脚本时提示 `python: command not found`？**  
 macOS 没有 `python` 命令，只有 `python3`。SKILL.md 里调用脚本必须用 `python3`。
